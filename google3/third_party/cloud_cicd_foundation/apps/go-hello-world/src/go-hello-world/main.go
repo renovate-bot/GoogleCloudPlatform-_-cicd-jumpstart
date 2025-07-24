@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This is an hello world app to demonstrate customization through an environment variable.
+// It also demonstrates the use of the Container Analysis API.
 package main
 
 import (
@@ -25,6 +27,7 @@ import (
 	// "gopkg.in/yaml.v2"
 )
 
+// ReportErrorEvent comprises the information about an error for Cloud Error Reporting.
 type ReportErrorEvent struct {
 	Type       string `json:"@type"`
 	Message    string `json:"message"`

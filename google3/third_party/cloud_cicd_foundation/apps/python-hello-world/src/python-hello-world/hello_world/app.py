@@ -22,10 +22,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def index() -> str:
-    """returns a hello world message
+  """returns a hello world message
 
-    Returns:
-        str: a hello world message
-    """
-    name = os.environ.get("NAME", "World")
-    return "Hello " + name + " from Python!"
+  Returns:
+      str: a hello world message
+  """
+  name = os.environ.get("NAME", "World")
+  return "Hello " + name + " from Python!"

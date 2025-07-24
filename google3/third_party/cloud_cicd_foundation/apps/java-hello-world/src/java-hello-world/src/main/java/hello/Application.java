@@ -14,18 +14,12 @@
 
 package hello;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@RestController
-public class HelloController {
-
-    @Value("${NAME:World}")
-    private String name;
-
-    @RequestMapping("/")
-    public String index() {
-        return "Hello " + name + " from Java!";
-    }
+@SpringBootApplication
+public class Application {
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
 }
