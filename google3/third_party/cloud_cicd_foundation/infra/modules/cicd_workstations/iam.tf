@@ -13,7 +13,7 @@
 # limitations under the License.
 
 resource "google_project_iam_custom_role" "cws_image_build_runner" {
-  count       = local.create_image_build_resources ? 1 : 0
+  count = local.create_image_build_resources ? 1 : 0
 
   project     = data.google_project.project.id
   role_id     = "cwsBuildRunner"
@@ -41,7 +41,7 @@ module "cws_image_build_runner_service_account" {
 }
 
 resource "google_project_iam_member" "cws_image_build_runner" {
-  count   = local.create_image_build_resources ? 1 : 0
+  count = local.create_image_build_resources ? 1 : 0
 
   project = data.google_project.project.id
   role    = google_project_iam_custom_role.cws_image_build_runner[0].name

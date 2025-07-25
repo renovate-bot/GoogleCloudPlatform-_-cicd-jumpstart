@@ -52,12 +52,12 @@ variable "cws_configs" {
     persistent_disk_fs_type        = string
     persistent_disk_type           = string
     persistent_disk_reclaim_policy = string
-    creators                       = optional(list(string))
     image                          = optional(string)
-    instances = list(object({
+    creators                       = optional(list(string))
+    instances = optional(list(object({
       name  = string
       users = list(string)
-    }))
+    })))
   }))
   description = "A map of Cloud Workstation configurations."
   default     = {}

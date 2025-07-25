@@ -49,7 +49,7 @@ module "project_services" {
 
   project_id                  = var.project_id
   disable_services_on_destroy = false
-  activate_apis = local.activate_apis
+  activate_apis               = local.activate_apis
 
   depends_on = [
     module.project_services_cloud_resourcemanager
