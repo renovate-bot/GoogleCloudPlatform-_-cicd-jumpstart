@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 # Copyright 2023-2025 Google LLC
 #
@@ -14,18 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-usage() {
-  echo "Usage: $0"
-}
+MODULES_DIR="$(dirname $(dirname $0))/infra/modules"
 
-test() {
-    ARTIFACTS_FILE=$(mktemp --suffix=.json)
-    skaffold build -f $SKAFFOLD_FILE --file-output=$ARTIFACTS_FILE
-    skaffold test -f $SKAFFOLD_FILE --build-artifacts=$ARTIFACTS_FILE
-}
-
-. $(dirname $0)/common.sh
-checkDependencies skaffold
-getRootDir
-
-test
+for MODULE in $(ls -d $MODULES_DIR/*)
+do
+  cd $MODULE \
+  && \
+  terraform-docs . > README.md \
+  && \
+  cd - > /dev/null
+done

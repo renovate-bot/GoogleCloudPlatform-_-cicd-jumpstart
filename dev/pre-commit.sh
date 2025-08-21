@@ -1,6 +1,6 @@
-# !/bin/bash
+#! /bin/sh
 
-# Copyright 2022-2024 Google LLC
+# Copyright 2023-2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Starting xpra server, session will terminate when Android Studio is Closed."
+$(dirname $0)/format-sources.sh
 
-function start_android_studio {
-  runuser user -c -l "xpra start --min-port=80 --bind-tcp=0.0.0.0:80 --html=on --exit-with-children=yes --systemd-run=no --daemon=no --start-child-after-connect=/opt/google/android-studio/bin/studio.sh"
-}
+$(dirname $0)/generate-docs.sh
 
-function kill_container {
-  echo "Android Studio exited, terminating container."
-  ps x | awk {'{print $1}'} | awk 'NR > 1' | xargs kill
-}
-
-(start_android_studio || kill_container)&
+tflint --recursive --chdir $(dirname $0)/../infra/ 2>&1
