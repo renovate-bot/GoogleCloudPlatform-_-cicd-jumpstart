@@ -24,6 +24,8 @@ locals {
     "binaryauthorization.googleapis.com",
     "clouddeploy.googleapis.com",
   ]
+  prefix        = var.namespace == "" ? "" : "${var.namespace}-"
+  github_source = var.github_owner != "" && var.github_repo != ""
 }
 
 data "google_project" "project" {

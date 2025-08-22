@@ -12,7 +12,67 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# General Project & Naming
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "namespace" {
+  type        = string
+  description = "A prefix to be added to resource names to ensure uniqueness."
+  default     = ""
+}
+
 variable "project_id" {
   type        = string
   description = "The ID of the Google Cloud project where resources will be deployed."
 }
+# go/keep-sorted end
+
+# Location/Region Variables
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "secret_manager_region" {
+  type        = string
+  description = "The region for the Secret Manager, cf. https://cloud.google.com/secret-manager/docs/locations."
+  default     = "us-central1"
+}
+
+variable "secure_source_manager_region" {
+  type        = string
+  description = "The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations."
+  default     = "us-central1"
+}
+# go/keep-sorted end
+
+# Source Control (GitHub & Secure Source Manager)
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "git_branch_trigger" {
+  type        = string
+  description = "The Secure Source Manager (SSM) branch that triggers Cloud Build on push."
+  default     = "main"
+}
+
+variable "git_branches_regexp_trigger" {
+  type        = string
+  description = "A regular expression to match GitHub branches that trigger Cloud Build on push."
+  default     = "^main$"
+}
+
+variable "github_owner" {
+  type        = string
+  description = "The owner of the GitHub repository (user or organization)."
+  default     = "GoogleCloudPlaform"
+}
+
+variable "github_repo" {
+  type        = string
+  description = "The name of the GitHub repository."
+  default     = "cicd-foundation"
+}
+
+variable "secure_source_manager_instance_name" {
+  description = "The name of the Secure Source Manager instance."
+  type        = string
+  default     = "cicd-foundation"
+}
+# go/keep-sorted end
