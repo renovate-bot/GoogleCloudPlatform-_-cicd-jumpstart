@@ -49,6 +49,90 @@ variable "secure_source_manager_region" {
 }
 # go/keep-sorted end
 
+# Applications & Stages
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "apps" {
+  type = map(object({
+    build = optional(object({
+      timeout      = number
+      machine_type = string
+      })
+    )
+    runtime = optional(string, "cloudrun"),
+    stages  = optional(map(map(string)))
+  }))
+  description = <<EOF
+  Map of applications to be deployed. Keys are application names, values configure
+  build, runtime, and stage-specific parameters. The `stages` attribute is a map
+  where keys are stage names (e.g., 'dev', 'prod'). The value for each stage is
+  another map, where keys are used as Cloud Deploy tags in the respective pipelines.
+  EOF
+  default     = {}
+  validation {
+    condition = alltrue([
+      for app_key, app_value in var.apps :
+      contains(var.runtimes, app_value.runtime)
+    ])
+    error_message = "Runtime must be one of the allowed runtimes: ${join(", ", var.runtimes)}."
+  }
+  validation {
+    condition = alltrue([
+      for app_key, app_value in var.apps :
+      # Check that if 'stages' is provided, all keys are valid.
+      (lookup(app_value, "stages", {}) == null ? true : alltrue([
+        for stage_key, stage_value in lookup(app_value, "stages", {}) :
+        alltrue([
+          for k in keys(stage_value) :
+          contains(keys(var.stages), k)
+        ])
+      ]))
+    ])
+    error_message = "Stages must be a subset of the allowed stages: ${join(", ", keys(var.stages))}."
+  }
+}
+
+variable "runtimes" {
+  type        = list(string)
+  description = "List of supported runtime solutions for applications."
+  default     = ["cloudrun", "gke", "workstations"]
+}
+
+variable "stages" {
+  type = map(object({
+    cloud_run_region                      = optional(string)
+    gke_cluster                           = optional(string)
+    project_id                            = optional(string)
+    peered_network                        = optional(string)
+    require_approval                      = optional(bool, false)
+    canary_percentages                    = optional(list(number))
+    canary_verify                         = optional(bool, false)
+    binary_authorization_evaluation_mode  = optional(string, "ALWAYS_ALLOW")
+    binary_authorization_enforcement_mode = optional(string, "DRYRUN_AUDIT_LOG_ONLY")
+  }))
+  description = "Map of deployment stages (e.g., dev, test, prod). Keys are stage names, values configure stage-specific settings like cluster, network, and Binary Authorization."
+  default = {
+    "dev" : {},
+    "test" : {},
+    "prod" : {},
+  }
+  validation {
+    condition = alltrue([
+      for stage_key, stage_value in var.stages :
+      ! contains(keys(stage_value), "canary_percentages") || contains(keys(stage_value), "gke_cluster")
+    ])
+    error_message = "The 'canary_percentages' can only be set when 'gke_cluster' is also provided for the stage."
+  }
+  validation {
+    condition = alltrue([
+      for stage_key, stage_value in var.stages :
+      contains(keys(stage_value), "canary_percentages") == contains(keys(stage_value), "canary_verify")
+    ])
+    error_message = "If either 'canary_percentages' or 'canary_verify' is set, both must be provided."
+  }
+}
+# go/keep-sorted end
+
 # Source Control (GitHub & Secure Source Manager)
 
 # go/keep-sorted start block=yes newline_separated=yes
