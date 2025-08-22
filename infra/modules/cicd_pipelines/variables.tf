@@ -30,6 +30,12 @@ variable "project_id" {
 # Location/Region Variables
 
 # go/keep-sorted start block=yes newline_separated=yes
+variable "artifact_registry_region" {
+  type        = string
+  description = "The region to use for Artifact Registry resources."
+  default     = "us-central1"
+}
+
 variable "secret_manager_region" {
   type        = string
   description = "The region for the Secret Manager, cf. https://cloud.google.com/secret-manager/docs/locations."
@@ -74,5 +80,21 @@ variable "secure_source_manager_instance_name" {
   description = "The name of the Secure Source Manager instance."
   type        = string
   default     = "cicd-foundation"
+}
+# go/keep-sorted end
+
+# Artifact Registry
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "artifact_registry_id" {
+  type        = string
+  description = "The ID of an existing Docker Artifact Registry to use. If null, a new one will be created."
+  default     = null
+}
+
+variable "artifact_registry_name" {
+  type        = string
+  description = "The name of the Artifact Registry repository to create if artifact_registry_id is null."
+  default     = "container-registry"
 }
 # go/keep-sorted end
