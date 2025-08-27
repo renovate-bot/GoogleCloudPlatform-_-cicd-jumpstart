@@ -36,6 +36,15 @@ output "secure_source_manager_instance_id" {
 }
 # go/keep-sorted end
 
+# Binary Authorization
+
+# go/keep-sorted start block=yes newline_separated=yes
+output "binary_authorization_policy_id" {
+  description = "The ID of the created Binary Authorization Policy."
+  value       = google_binary_authorization_policy.policy.id
+}
+# go/keep-sorted end
+
 # Artifact Registry
 
 # go/keep-sorted start block=yes newline_separated=yes

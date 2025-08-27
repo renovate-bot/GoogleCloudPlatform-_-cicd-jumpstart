@@ -25,7 +25,7 @@ locals {
     "clouddeploy.googleapis.com",
   ]
   prefix                       = var.namespace == "" ? "" : "${var.namespace}-"
-  github_source                = var.github_owner != "" && var.github_repo != ""
+  github_source                = length(var.github_owner) > 0 && length(var.github_repo) > 0
   artifact_registry_project_id = data.google_project.project.project_id
 }
 

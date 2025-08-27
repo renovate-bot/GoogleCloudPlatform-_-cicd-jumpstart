@@ -36,6 +36,12 @@ variable "artifact_registry_region" {
   default     = "us-central1"
 }
 
+variable "deploy_region" {
+  type        = string
+  description = "The region to use for Cloud Deploy resources."
+  default     = "us-central1"
+}
+
 variable "secret_manager_region" {
   type        = string
   description = "The region for the Secret Manager, cf. https://cloud.google.com/secret-manager/docs/locations."
@@ -180,5 +186,27 @@ variable "artifact_registry_name" {
   type        = string
   description = "The name of the Artifact Registry repository to create if artifact_registry_id is null."
   default     = "container-registry"
+}
+# go/keep-sorted end
+
+# Cloud Deploy
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "canary_route_update_wait_time" {
+  type        = number
+  description = "The time (in seconds) to wait for network route updates during GKE canary deployments."
+  default     = 60
+}
+
+variable "canary_verify" {
+  type        = bool
+  description = "Whether to enable verification steps for canary deployments in Cloud Deploy."
+  default     = true
+}
+
+variable "service_account_cloud_deploy_name" {
+  type        = string
+  description = "The base name for the Cloud Deploy service accounts. Stage name will be appended."
+  default     = "cloud-deploy"
 }
 # go/keep-sorted end
