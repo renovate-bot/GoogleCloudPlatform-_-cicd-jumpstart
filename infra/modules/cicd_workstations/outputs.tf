@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# go/keep-sorted start block=yes newline_separated=yes
 output "cws_clusters" {
   description = "A map of Cloud Workstation clusters, with their IDs and other attributes."
   value = {
@@ -50,3 +51,9 @@ output "cws_instances" {
     }
   }
 }
+
+output "cws_service_account_email" {
+  description = "The email address of the Cloud Workstations Service Account."
+  value       = module.cws_service_account.email
+}
+# go/keep-sorted end
