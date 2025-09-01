@@ -26,6 +26,7 @@ locals {
   ]
   prefix                       = var.namespace == "" ? "" : "${var.namespace}-"
   github_source                = length(var.github_owner) > 0 && length(var.github_repo) > 0
+  kms_project_id               = data.google_project.project.project_id
   artifact_registry_project_id = data.google_project.project.project_id
 }
 

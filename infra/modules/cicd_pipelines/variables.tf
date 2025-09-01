@@ -42,6 +42,12 @@ variable "deploy_region" {
   default     = "us-central1"
 }
 
+variable "kms_keyring_location" {
+  type        = string
+  description = "The location for the KMS keyring."
+  default     = "us-central1"
+}
+
 variable "secret_manager_region" {
   type        = string
   description = "The region for the Secret Manager, cf. https://cloud.google.com/secret-manager/docs/locations."
@@ -170,6 +176,69 @@ variable "secure_source_manager_instance_name" {
   description = "The name of the Secure Source Manager instance."
   type        = string
   default     = "cicd-foundation"
+}
+# go/keep-sorted end
+
+# Binary Authorization
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "kms_digest_alg" {
+  type        = string
+  description = "The digest algorithm to use for KMS signing."
+  default     = "SHA512"
+}
+
+variable "kms_key_name" {
+  type        = string
+  description = "The name of the KMS key used for signing attestations."
+  default     = "vulnz-attestor-key"
+}
+
+variable "kms_keyring_name" {
+  type        = string
+  description = "The name of the KMS key ring."
+  default     = "vulnz-attestor-keyring"
+}
+
+variable "kms_signing_alg" {
+  type        = string
+  description = "The KMS signing algorithm to use for the vulnerability attestor key."
+  default     = "RSA_SIGN_PKCS1_4096_SHA512"
+}
+
+variable "kritis_policy_default" {
+  type        = string
+  description = "The default YAML content of the Kritis vulnerability signing policy."
+  default     = <<-EOT
+apiVersion: kritis.grafeas.io/v1beta1
+kind: VulnzSigningPolicy
+metadata:
+  name: cicd-foundation
+spec:
+  imageVulnerabilityRequirements:
+    maximumFixableSeverity: MEDIUM
+    maximumUnfixableSeverity: LOW
+    allowlistCVEs:
+#    - projects/goog-vulnz/notes/CVE-2023-39321
+EOT
+}
+
+variable "kritis_policy_file" {
+  type        = string
+  description = "Path to a Kritis vulnerability signing policy YAML file. If null, the content from kritis_policy_default is used."
+  default     = null
+}
+
+variable "kritis_signer_image" {
+  type        = string
+  description = "The container image reference for the Kritis signer. If empty, signing is disabled."
+  default     = ""
+}
+
+variable "vulnz_attestor_name" {
+  type        = string
+  description = "The name of the Binary Authorization Attestor and the Container Analysis note."
+  default     = "vulnz-attestor"
 }
 # go/keep-sorted end
 
