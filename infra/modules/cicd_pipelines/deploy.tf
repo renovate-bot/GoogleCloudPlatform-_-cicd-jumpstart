@@ -146,3 +146,25 @@ resource "google_clouddeploy_delivery_pipeline" "continuous_delivery" {
     }
   }
 }
+
+resource "google_clouddeploy_automation" "promote-release" {
+  for_each = local.cloud_deploy_apps
+
+  name              = "${local.prefix}${each.key}"
+  project           = google_clouddeploy_delivery_pipeline.continuous_delivery[each.key].project
+  location          = google_clouddeploy_delivery_pipeline.continuous_delivery[each.key].location
+  delivery_pipeline = google_clouddeploy_delivery_pipeline.continuous_delivery[each.key].name
+  description       = "Terraform-managed."
+  service_account   = module.service_account_cloud_build.email
+  selector {
+    targets {
+      id = "*"
+    }
+  }
+  suspended = false
+  rules {
+    promote_release_rule {
+      id = "promote-release"
+    }
+  }
+}
