@@ -13,7 +13,7 @@
 # limitations under the License.
 
 locals {
-  activate_apis = [
+  activate_apis = concat([
     "secretmanager.googleapis.com",
     "securesourcemanager.googleapis.com",
     "cloudbuild.googleapis.com",
@@ -23,7 +23,9 @@ locals {
     "ondemandscanning.googleapis.com",
     "binaryauthorization.googleapis.com",
     "clouddeploy.googleapis.com",
-  ]
+    ],
+    length(local.workstation_apps) > 0 ? ["cloudscheduler.googleapis.com"] : []
+  )
   prefix                       = var.namespace == "" ? "" : "${var.namespace}-"
   github_source                = var.github_owner != null && var.github_repo != null
   build_project_id             = data.google_project.project.project_id
@@ -35,6 +37,7 @@ locals {
     data.google_artifact_registry_repository.container_repository.project,
     data.google_artifact_registry_repository.container_repository.repository_id
   )
+  workstation_apps = { for k, v in var.apps : k => v if v.runtime == "workstations" }
 }
 
 data "google_project" "project" {

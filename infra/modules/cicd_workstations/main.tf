@@ -13,15 +13,10 @@
 # limitations under the License.
 
 locals {
-  create_image_build_resources = length(var.custom_images) > 0
-  default_apis = [
+  activate_apis = [
     "compute.googleapis.com",
     "workstations.googleapis.com",
   ]
-  activate_apis = concat(
-    local.default_apis,
-    local.create_image_build_resources ? ["cloudscheduler.googleapis.com"] : [],
-  )
 }
 
 data "google_project" "project" {

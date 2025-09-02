@@ -54,6 +54,12 @@ variable "kms_keyring_location" {
   default     = "us-central1"
 }
 
+variable "scheduler_default_region" {
+  type        = string
+  description = "The default region for the Cloud Scheduler if not specified in the application config."
+  default     = "us-central1"
+}
+
 variable "secret_manager_region" {
   type        = string
   description = "The region for the Secret Manager, cf. https://cloud.google.com/secret-manager/docs/locations."
@@ -79,12 +85,16 @@ variable "apps" {
     )
     runtime = optional(string, "cloudrun"),
     stages  = optional(map(map(string)))
+    workstation_config = optional(object({
+      scheduler_region = string
+      ci_schedule      = string
+    }))
   }))
   description = <<EOF
   Map of applications to be deployed. Keys are application names, values configure
   build, runtime, and stage-specific parameters. The `stages` attribute is a map
   where keys are stage names (e.g., 'dev', 'prod'). The value for each stage is
-  another map, where keys are used as Cloud Deploy tags in the respective pipelines.
+  another map, where keys are used Cloud Deploy tags in the respective pipelines.
   EOF
   default     = {}
   validation {
@@ -184,6 +194,14 @@ variable "secure_source_manager_instance_name" {
   default     = "cicd-foundation"
 }
 # go/keep-sorted end
+
+# Cloud Scheduler
+
+variable "default_ci_schedule" {
+  type        = string
+  description = "The default cron schedule for continuous integration triggers in Cloud Scheduler if not specified in the application config."
+  default     = "0 0 * * *"
+}
 
 # Cloud Build
 
@@ -331,6 +349,12 @@ variable "artifact_registry_name" {
   type        = string
   description = "The name of the Artifact Registry repository to create if artifact_registry_id is null."
   default     = "container-registry"
+}
+
+variable "artifact_registry_readers" {
+  type        = list(string)
+  description = "List of service account emails in IAM email format to grant Artifact Registry reader role."
+  default     = []
 }
 # go/keep-sorted end
 

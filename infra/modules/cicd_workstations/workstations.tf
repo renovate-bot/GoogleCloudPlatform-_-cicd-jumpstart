@@ -58,14 +58,13 @@ resource "google_workstations_workstation_config" "config" {
   workstation_cluster_id = local.config_to_cluster_map[each.key].workstation_cluster_id
   location               = local.config_to_cluster_map[each.key].location
   idle_timeout           = "${each.value.idle_timeout}s"
-
   dynamic "container" {
     for_each = each.value.image != null ? [1] : []
+
     content {
       image = each.value.image
     }
   }
-
   host {
     gce_instance {
       machine_type                 = each.value.machine_type
@@ -77,7 +76,6 @@ resource "google_workstations_workstation_config" "config" {
       enable_nested_virtualization = each.value.enable_nested_virtualization
     }
   }
-
   persistent_directories {
     mount_path = "/home"
     gce_pd {
@@ -110,8 +108,7 @@ resource "google_workstations_workstation_config_iam_policy" "creators" {
   location               = google_workstations_workstation_config.config[each.key].location
   workstation_cluster_id = google_workstations_workstation_config.config[each.key].workstation_cluster_id
   workstation_config_id  = google_workstations_workstation_config.config[each.key].workstation_config_id
-
-  policy_data = data.google_iam_policy.creators[each.key].policy_data
+  policy_data            = data.google_iam_policy.creators[each.key].policy_data
 
   depends_on  = [google_workstations_workstation_config.config]
 }
@@ -149,27 +146,5 @@ resource "google_workstations_workstation_iam_policy" "iam_policies" {
   workstation_cluster_id = each.value.workstation_cluster_id
   workstation_config_id  = each.value.workstation_config_id
   workstation_id         = each.value.workstation_id
-
-  policy_data = data.google_iam_policy.users[each.key].policy_data
-}
-
-# Cloud Scheduler
-
-# cf. https://cloud.google.com/workstations/docs/tutorial-automate-container-image-rebuild
-resource "google_cloud_scheduler_job" "ws_image" {
-  for_each = var.custom_images
-
-  project     = data.google_project.project.id
-  region      = coalesce(each.value.scheduler_region, var.default_custom_images_schedule_region)
-  name        = "${each.key}${var.custom_images_schedule_suffix}"
-  description = "Terraform-managed."
-  schedule    = coalesce(each.value.ci_schedule, var.default_custom_images_schedule)
-  paused      = false
-  http_target {
-    http_method = "POST"
-    uri         = "https://cloudbuild.googleapis.com/v1/projects/${each.value.ci_trigger.project}/locations/${each.value.ci_trigger.location}/triggers/${each.value.ci_trigger.id}:run"
-    oauth_token {
-      service_account_email = module.cws_image_build_runner_service_account[0].email
-    }
-  }
+  policy_data            = data.google_iam_policy.users[each.key].policy_data
 }

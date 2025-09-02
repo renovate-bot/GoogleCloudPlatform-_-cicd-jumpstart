@@ -28,6 +28,7 @@ module "docker_artifact_registry" {
 }
 
 data "google_artifact_registry_repository" "container_repository" {
+  project       = local.artifact_registry_project_id
   location      = var.artifact_registry_region
   repository_id = coalesce(var.artifact_registry_id, module.docker_artifact_registry[0].id)
   depends_on = [
@@ -40,9 +41,14 @@ resource "google_artifact_registry_repository_iam_binding" "reader" {
   location   = var.artifact_registry_region
   repository = data.google_artifact_registry_repository.container_repository.id
   role       = "roles/artifactregistry.reader"
-  members = [
+  members = concat([
     module.service_account_cloud_build.iam_email
-  ]
+    ],
+    length(local.workstation_apps) > 0 ? [
+      module.cws_image_build_runner_service_account[0].iam_email
+    ] : [],
+    var.artifact_registry_readers
+  )
 }
 
 resource "google_artifact_registry_repository_iam_binding" "writer" {

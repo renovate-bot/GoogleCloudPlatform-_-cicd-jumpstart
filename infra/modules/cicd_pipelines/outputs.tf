@@ -97,3 +97,17 @@ output "artifact_registry_repository_uri" {
   value       = local.artifact_registry_repository_uri
 }
 # go/keep-sorted end
+
+# Cloud Workstations
+
+# go/keep-sorted start block=yes newline_separated=yes
+output "cws_image_build_runner_service_account_email" {
+  description = "The email of the Cloud Workstation Image Build Runner service account."
+  value       = length(local.workstation_apps) > 0 ? module.cws_image_build_runner_service_account[0].email : null
+}
+
+output "cws_image_build_runner_service_account_id" {
+  description = "The ID of the Cloud Workstation Image Build Runner service account."
+  value       = length(local.workstation_apps) > 0 ? module.cws_image_build_runner_service_account[0].id : null
+}
+# go/keep-sorted end
