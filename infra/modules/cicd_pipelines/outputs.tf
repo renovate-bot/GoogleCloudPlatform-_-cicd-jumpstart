@@ -36,6 +36,45 @@ output "secure_source_manager_instance_id" {
 }
 # go/keep-sorted end
 
+# Cloud Build
+
+# go/keep-sorted start block=yes newline_separated=yes
+output "cloud_build_service_account_email" {
+  description = "The email of the Cloud Build service account."
+  value       = module.service_account_cloud_build.email
+}
+
+output "cloud_build_service_account_id" {
+  description = "The ID of the Cloud Build service account."
+  value       = module.service_account_cloud_build.id
+}
+
+output "cloud_build_trigger_github_connection_needed" {
+  description = "Instructions to connect GitHub repository if using GitHub source."
+  value = local.github_source ? (<<-EOT
+    you first need to connect the GitHub repository to your GCP project:
+    https://console.cloud.google.com/cloud-build/triggers;region=global/connect
+    before you can create this trigger
+  EOT
+  ) : ""
+}
+
+output "cloud_build_trigger_id" {
+  description = "The full resource ID of the Cloud Build trigger."
+  value       = { for k, v in google_cloudbuild_trigger.continuous_integration : k => v.id }
+}
+
+output "cloud_build_trigger_trigger_id" {
+  description = "The unique short ID of the Cloud Build trigger."
+  value       = { for k, v in google_cloudbuild_trigger.continuous_integration : k => v.trigger_id }
+}
+
+output "cloud_build_worker_pool_ids" {
+  description = "A map of Cloud Build Worker Pool IDs, keyed by stage name."
+  value       = { for k, v in google_cloudbuild_worker_pool.pool : k => v.id }
+}
+# go/keep-sorted end
+
 # Binary Authorization
 
 # go/keep-sorted start block=yes newline_separated=yes
@@ -51,5 +90,10 @@ output "binary_authorization_policy_id" {
 output "artifact_registry_repository" {
   description = "The Artifact Registry repository object."
   value       = data.google_artifact_registry_repository.container_repository
+}
+
+output "artifact_registry_repository_uri" {
+  description = "The URI of the Artifact Registry repository."
+  value       = local.artifact_registry_repository_uri
 }
 # go/keep-sorted end

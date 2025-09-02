@@ -25,9 +25,16 @@ locals {
     "clouddeploy.googleapis.com",
   ]
   prefix                       = var.namespace == "" ? "" : "${var.namespace}-"
-  github_source                = length(var.github_owner) > 0 && length(var.github_repo) > 0
+  github_source                = var.github_owner != null && var.github_repo != null
+  build_project_id             = data.google_project.project.project_id
   kms_project_id               = data.google_project.project.project_id
   artifact_registry_project_id = data.google_project.project.project_id
+  artifact_registry_repository_uri = format(
+    "%s-docker.pkg.dev/%s/%s",
+    data.google_artifact_registry_repository.container_repository.location,
+    data.google_artifact_registry_repository.container_repository.project,
+    data.google_artifact_registry_repository.container_repository.repository_id
+  )
 }
 
 data "google_project" "project" {

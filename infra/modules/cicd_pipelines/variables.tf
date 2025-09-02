@@ -36,6 +36,12 @@ variable "artifact_registry_region" {
   default     = "us-central1"
 }
 
+variable "cloud_build_region" {
+  type        = string
+  description = "The region to use for Cloud Build resources."
+  default     = "us-central1"
+}
+
 variable "deploy_region" {
   type        = string
   description = "The region to use for Cloud Deploy resources."
@@ -163,19 +169,89 @@ variable "git_branches_regexp_trigger" {
 variable "github_owner" {
   type        = string
   description = "The owner of the GitHub repository (user or organization)."
-  default     = "GoogleCloudPlaform"
+  default     = null
 }
 
 variable "github_repo" {
   type        = string
   description = "The name of the GitHub repository."
-  default     = "cicd-foundation"
+  default     = null
 }
 
 variable "secure_source_manager_instance_name" {
   description = "The name of the Secure Source Manager instance."
   type        = string
   default     = "cicd-foundation"
+}
+# go/keep-sorted end
+
+# Cloud Build
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "build_machine_type_default" {
+  type        = string
+  description = "The default machine type to use for Cloud Build jobs."
+  default     = "UNSPECIFIED"
+}
+
+variable "build_timeout_default_seconds" {
+  type        = number
+  description = "The default timeout in seconds for Cloud Build jobs."
+  default     = 7200
+}
+
+variable "cloud_build_pool_disk_size_gb" {
+  type        = number
+  description = "The disk size in GB for Cloud Build worker pool workers."
+  default     = 100
+}
+
+variable "cloud_build_pool_machine_type" {
+  type        = string
+  description = "The machine type for Cloud Build worker pool workers."
+  default     = "e2-standard-2"
+}
+
+variable "cloud_build_pool_name" {
+  type        = string
+  description = "The base name for the Cloud Build worker pools. Stage name will be appended."
+  default     = "worker-pool"
+}
+
+variable "cloud_build_service_account_name" {
+  type        = string
+  description = "The name of the Cloud Build service account to create."
+  default     = "cloudbuild"
+}
+
+variable "docker_image_tag" {
+  type        = string
+  description = "The tag of the Docker container image to use in build steps."
+  default     = "20.10.24"
+}
+
+variable "gcloud_image_tag" {
+  type        = string
+  description = "The tag of the gcr.io/google.com/cloudsdktool/cloud-sdk image to use."
+  default     = "490.0.0"
+}
+
+variable "skaffold_image_tag" {
+  type        = string
+  description = "The tag of the gcr.io/k8s-skaffold/skaffold image to use."
+  default     = "v2.13.2-lts"
+}
+
+variable "skaffold_output" {
+  type        = string
+  description = "The filename for the Skaffold artifacts JSON output."
+  default     = "artifacts.json"
+}
+
+variable "skaffold_quiet" {
+  type        = bool
+  description = "Suppress Skaffold console output during builds."
+  default     = false
 }
 # go/keep-sorted end
 
