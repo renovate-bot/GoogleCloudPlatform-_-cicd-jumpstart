@@ -13,6 +13,7 @@
 # limitations under the License.
 
 locals {
+  # go/keep-sorted start
   activate_apis = concat([
     "secretmanager.googleapis.com",
     "securesourcemanager.googleapis.com",
@@ -26,10 +27,6 @@ locals {
     ],
     length(local.workstation_apps) > 0 ? ["cloudscheduler.googleapis.com"] : []
   )
-  prefix                       = var.namespace == "" ? "" : "${var.namespace}-"
-  github_source                = var.github_owner != null && var.github_repo != null
-  build_project_id             = data.google_project.project.project_id
-  kms_project_id               = data.google_project.project.project_id
   artifact_registry_project_id = data.google_project.project.project_id
   artifact_registry_repository_uri = format(
     "%s-docker.pkg.dev/%s/%s",
@@ -37,7 +34,14 @@ locals {
     data.google_artifact_registry_repository.container_repository.project,
     data.google_artifact_registry_repository.container_repository.repository_id
   )
-  workstation_apps = { for k, v in var.apps : k => v if v.runtime == "workstations" }
+  build_project_id                = data.google_project.project.project_id
+  cloud_deploy_apps               = { for key, value in var.apps : key => value if contains(local.cloud_deploy_supported_runtimes, value.runtime) }
+  cloud_deploy_supported_runtimes = ["cloudrun", "gke"]
+  github_source                   = var.github_owner != null && var.github_repo != null
+  kms_project_id                  = data.google_project.project.project_id
+  prefix                          = var.namespace == "" ? "" : "${var.namespace}-"
+  workstation_apps                = { for k, v in var.apps : k => v if v.runtime == "workstations" }
+  # go/keep-sorted end
 }
 
 data "google_project" "project" {

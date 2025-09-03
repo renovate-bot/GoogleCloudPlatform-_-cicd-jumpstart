@@ -12,13 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-locals {
-  cloud_deploy_supported_runtimes = ["cloudrun", "gke"]
-  cloud_deploy_apps               = { for key, value in var.apps : key => value if contains(local.cloud_deploy_supported_runtimes, value.runtime) }
-}
-
 module "service_account_cloud_deploy" {
-  for_each = var.stages
+  for_each = length(local.cloud_deploy_apps) > 0 ? var.stages : {}
 
   source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v36.0.1"
 
@@ -54,7 +49,7 @@ module "service_account_cloud_deploy" {
 }
 
 resource "google_clouddeploy_target" "cluster" {
-  for_each = { for key, value in var.stages : key => value if value.gke_cluster != null }
+  for_each = length(local.cloud_deploy_apps) > 0 ? { for key, value in var.stages : key => value if value.gke_cluster != null } : {}
 
   project     = local.build_project_id
   name        = "${local.prefix}cluster-${each.key}"
@@ -76,7 +71,7 @@ resource "google_clouddeploy_target" "cluster" {
 }
 
 resource "google_clouddeploy_target" "run" {
-  for_each = { for key, value in var.stages : key => value if value.cloud_run_region != null }
+  for_each = length(local.cloud_deploy_apps) > 0 ? { for key, value in var.stages : key => value if value.cloud_run_region != null } : {}
 
   project     = local.build_project_id
   name        = "${local.prefix}run-${each.key}"
