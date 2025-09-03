@@ -79,15 +79,21 @@ variable "secure_source_manager_region" {
 variable "apps" {
   type = map(object({
     build = optional(object({
-      timeout      = number
+      # The relative path to the Dockerfile within the repository.
+      dockerfile_path = optional(string)
+      # The timeout for the build in seconds.
+      timeout = number
+      # The machine type to use for the build.
       machine_type = string
       })
     )
     runtime = optional(string, "cloudrun"),
     stages  = optional(map(map(string)))
     workstation_config = optional(object({
+      # The region to use for the Cloud Scheduler job.
       scheduler_region = string
-      ci_schedule      = string
+      # The schedule for the Cloud Scheduler job in cron format (e.g., "0 1 * * *")
+      ci_schedule = string
     }))
   }))
   description = <<EOF

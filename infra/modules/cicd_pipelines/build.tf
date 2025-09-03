@@ -82,7 +82,7 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
   build {
     step {
       id   = "build"
-      dir  = "apps/$${_APP_NAME}"
+      dir  = try(each.value.build.dockerfile_path, "apps/${each.key}")
       name = "gcr.io/k8s-skaffold/skaffold:$${_SKAFFOLD_IMAGE_TAG}"
       entrypoint = "/bin/sh"
       args = [
@@ -99,7 +99,7 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
     step {
       id         = "fetchImageDigest"
       wait_for   = ["build"]
-      dir        = "apps/$${_APP_NAME}"
+      dir        = try(each.value.build.dockerfile_path, "apps/${each.key}")
       name       = "gcr.io/cloud-builders/docker:$${_DOCKER_IMAGE_TAG}"
       entrypoint = "/bin/sh"
       args = [
@@ -131,10 +131,10 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
           <<-EOT
           POLICY_FILE=$(mktemp)
           echo "$${_KRITIS_POLICY_BASE64}" | base64 -d > "$$POLICY_FILE"
-          IMAGES=$$(/bin/cat ./apps/$${_APP_NAME}/images.txt)
+          IMAGES=$$(/bin/cat ./$${_DOCKERFILE_PATH}/images.txt)
           for IMAGE in $$IMAGES; do
             DIGEST_FILENAME=$$(/bin/echo "$$IMAGE" | /bin/sed 's/.*@sha256://').digest
-            IMAGE_DIGEST=$$(/bin/cat "./apps/$${_APP_NAME}/$$DIGEST_FILENAME")
+            IMAGE_DIGEST=$$(/bin/cat "./$${_DOCKERFILE_PATH}/$$DIGEST_FILENAME")
             /kritis/signer \
               -v=10 \
               -alsologtostderr \
@@ -156,7 +156,7 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
       content {
         id         = "createRelease"
         wait_for   = [var.kritis_signer_image == null || var.kritis_signer_image == "" ? "fetchImageDigest" : "vulnsign"]
-        dir        = "apps/$${_APP_NAME}"
+        dir        = try(each.value.build.dockerfile_path, "apps/${each.key}")
         name       = "gcr.io/google.com/cloudsdktool/cloud-sdk:$${_GCLOUD_IMAGE_TAG}"
         entrypoint = "/bin/sh"
         args = [
@@ -181,11 +181,12 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
     }
   }
   included_files = [
-    "apps/${each.key}/**"
+    "${try(each.value.build.dockerfile_path, "apps/${each.key}")}/**"
   ]
   substitutions = {
     # go/keep-sorted start
     _APP_NAME              = each.key
+    _DOCKERFILE_PATH       = try(each.value.build.dockerfile_path, "apps/${each.key}")
     _DOCKER_IMAGE_TAG      = var.docker_image_tag
     _GCLOUD_IMAGE_TAG      = var.gcloud_image_tag
     _KMS_DIGEST_ALG        = var.kms_digest_alg
