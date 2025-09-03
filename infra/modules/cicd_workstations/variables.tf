@@ -41,19 +41,20 @@ variable "cws_clusters" {
 
 variable "cws_configs" {
   type = map(object({
-    cws_cluster                    = string
-    idle_timeout                   = number
-    machine_type                   = string
-    boot_disk_size_gb              = number
-    disable_public_ip_addresses    = bool
-    pool_size                      = number
-    enable_nested_virtualization   = bool
-    persistent_disk_size_gb        = number
-    persistent_disk_fs_type        = string
-    persistent_disk_type           = string
-    persistent_disk_reclaim_policy = string
-    image                          = optional(string)
-    creators                       = optional(list(string))
+    cws_cluster                     = string
+    idle_timeout_seconds            = number
+    machine_type                    = string
+    boot_disk_size_gb               = number
+    disable_public_ip_addresses     = bool
+    pool_size                       = number
+    enable_nested_virtualization    = bool
+    persistent_disk_size_gb         = optional(number)
+    persistent_disk_fs_type         = optional(string)
+    persistent_disk_type            = string
+    persistent_disk_reclaim_policy  = string
+    persistent_disk_source_snapshot = optional(string)
+    image                           = optional(string)
+    creators                        = optional(list(string))
     instances = optional(list(object({
       name  = string
       users = list(string)
@@ -61,4 +62,18 @@ variable "cws_configs" {
   }))
   description = "A map of Cloud Workstation configurations."
   default     = {}
+  validation {
+    condition = alltrue([
+      for k, v in var.cws_configs :
+      v.persistent_disk_source_snapshot == null || (v.persistent_disk_size_gb == null && v.persistent_disk_fs_type == null)
+    ])
+    error_message = "If persistent_disk_source_snapshot is provided, persistent_disk_size_gb and persistent_disk_fs_type must not be set."
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.cws_configs :
+      v.persistent_disk_source_snapshot != null || (v.persistent_disk_size_gb != null && v.persistent_disk_fs_type != null)
+    ])
+    error_message = "If persistent_disk_source_snapshot is not provided, persistent_disk_size_gb and persistent_disk_fs_type must both be set."
+  }
 }

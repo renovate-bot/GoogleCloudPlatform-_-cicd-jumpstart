@@ -57,7 +57,7 @@ resource "google_workstations_workstation_config" "config" {
   workstation_config_id  = each.key
   workstation_cluster_id = local.config_to_cluster_map[each.key].workstation_cluster_id
   location               = local.config_to_cluster_map[each.key].location
-  idle_timeout           = "${each.value.idle_timeout}s"
+  idle_timeout           = "${each.value.idle_timeout_seconds}s"
   dynamic "container" {
     for_each = each.value.image != null ? [1] : []
 
@@ -79,10 +79,11 @@ resource "google_workstations_workstation_config" "config" {
   persistent_directories {
     mount_path = "/home"
     gce_pd {
-      size_gb        = each.value.persistent_disk_size_gb
-      fs_type        = each.value.persistent_disk_fs_type
-      disk_type      = each.value.persistent_disk_type
-      reclaim_policy = each.value.persistent_disk_reclaim_policy
+      source_snapshot = each.value.persistent_disk_source_snapshot
+      size_gb         = each.value.persistent_disk_size_gb
+      fs_type         = each.value.persistent_disk_fs_type
+      disk_type       = each.value.persistent_disk_type
+      reclaim_policy  = each.value.persistent_disk_reclaim_policy
     }
   }
 }
