@@ -20,3 +20,12 @@ module "cws_service_account" {
   display_name = "Cloud Workstation Service Account"
   description  = "Terraform-managed."
 }
+
+resource "google_project_iam_member" "workstations_operation_viewer" {
+  # grant to all users listed in the `creators` field of each Cloud Workstations configuration
+  for_each = toset(flatten([for config in var.cws_configs : coalesce(config.creators, [])]))
+
+  project = data.google_project.project.project_id
+  role    = "roles/workstations.operationViewer"
+  member  = "user:${each.key}"
+}
