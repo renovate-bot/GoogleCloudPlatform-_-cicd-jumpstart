@@ -19,6 +19,7 @@ locals {
     "securesourcemanager.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudkms.googleapis.com",
+    "artifactregistry.googleapis.com",
     "containeranalysis.googleapis.com",
     "containerscanning.googleapis.com",
     "ondemandscanning.googleapis.com",
@@ -31,7 +32,7 @@ locals {
   artifact_registry_repository_uri = format(
     "%s-docker.pkg.dev/%s/%s",
     data.google_artifact_registry_repository.container_repository.location,
-    data.google_artifact_registry_repository.container_repository.project,
+    local.artifact_registry_project_id,
     data.google_artifact_registry_repository.container_repository.repository_id
   )
   build_project_id                = data.google_project.project.project_id
