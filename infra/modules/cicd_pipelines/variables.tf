@@ -15,6 +15,12 @@
 # General Project & Naming
 
 # go/keep-sorted start block=yes newline_separated=yes
+variable "enable_apis" {
+  type        = bool
+  description = "Whether to enable the required APIs for the module."
+  default     = true
+}
+
 variable "namespace" {
   type        = string
   description = "A prefix to be added to resource names to ensure uniqueness."

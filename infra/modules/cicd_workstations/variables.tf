@@ -23,6 +23,12 @@ variable "cws_service_account_name" {
   default     = "workstations"
 }
 
+variable "enable_apis" {
+  type        = bool
+  description = "Whether to enable the required APIs for the module."
+  default     = true
+}
+
 variable "cws_scopes" {
   type        = list(string)
   description = "The scope of the Cloud Workstations Service Account"
