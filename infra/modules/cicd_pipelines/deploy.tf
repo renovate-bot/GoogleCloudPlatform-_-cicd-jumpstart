@@ -68,6 +68,13 @@ resource "google_clouddeploy_target" "cluster" {
     ]
     service_account = module.service_account_cloud_deploy[each.key].email
   }
+  labels = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
+  }
 }
 
 resource "google_clouddeploy_target" "run" {
@@ -88,6 +95,13 @@ resource "google_clouddeploy_target" "run" {
       "DEPLOY",
     ]
     service_account = module.service_account_cloud_deploy[each.key].email
+  }
+  labels = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
   }
 }
 
@@ -140,6 +154,13 @@ resource "google_clouddeploy_delivery_pipeline" "continuous_delivery" {
       }
     }
   }
+  labels = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
+  }
 }
 
 resource "google_clouddeploy_automation" "promote-release" {
@@ -161,5 +182,12 @@ resource "google_clouddeploy_automation" "promote-release" {
     promote_release_rule {
       id = "promote-release"
     }
+  }
+  labels = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
   }
 }

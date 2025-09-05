@@ -46,6 +46,13 @@ resource "google_workstations_workstation_cluster" "cluster" {
   network                = "projects/${data.google_project.project.project_id}/global/networks/${each.value.network}"
   subnetwork             = "projects/${data.google_project.project.project_id}/regions/${each.value.region}/subnetworks/${each.value.subnetwork}"
   location               = each.value.region
+  labels                 = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
+  }
 }
 
 # Cloud Workstation Configs
@@ -86,6 +93,13 @@ resource "google_workstations_workstation_config" "config" {
       reclaim_policy  = each.value.persistent_disk_reclaim_policy
     }
   }
+  labels = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
+  }
 }
 
 # IAM policy for granting the ability to create Cloud Workstation instances
@@ -124,6 +138,13 @@ resource "google_workstations_workstation" "workstation" {
   location               = local.config_to_cluster_map[each.value.config_key].location
   workstation_config_id  = google_workstations_workstation_config.config[each.value.config_key].workstation_config_id
   workstation_id         = each.value.ws_name
+  labels                 = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
+  }
 }
 
 # IAM policy for granting the ability to use Cloud Workstation instances.

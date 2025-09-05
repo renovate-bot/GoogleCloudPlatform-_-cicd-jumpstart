@@ -17,6 +17,16 @@ locals {
     "compute.googleapis.com",
     "workstations.googleapis.com",
   ]
+  default_labels = {
+    "tf_module_github_org"  = "GoogleCloudPlatform"
+    "tf_module_github_repo" = "cicd-foundation"
+    "tf_module_name"        = "cicd_workstations"
+    "tf_module_version"     = "v3-0-0"
+  }
+  # merge the default labels with the user-provided labels and convert to lowercase
+  common_labels = {
+    for k, v in merge(var.labels, local.default_labels) : lower(k) => lower(v)
+  }
 }
 
 data "google_project" "project" {

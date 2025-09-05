@@ -29,6 +29,12 @@ variable "enable_apis" {
   default     = true
 }
 
+variable "labels" {
+  type        = map(string)
+  description = "Common labels to be applied to resources."
+  default     = {}
+}
+
 variable "cws_scopes" {
   type        = list(string)
   description = "The scope of the Cloud Workstations Service Account"

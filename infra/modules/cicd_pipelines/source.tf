@@ -16,6 +16,13 @@ resource "google_secure_source_manager_instance" "source" {
   project     = data.google_project.project.project_id
   location    = var.secure_source_manager_region
   instance_id = "${local.prefix}${var.secure_source_manager_instance_name}"
+  labels      = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
+  }
 }
 
 resource "google_secret_manager_secret" "webhook_trigger" {

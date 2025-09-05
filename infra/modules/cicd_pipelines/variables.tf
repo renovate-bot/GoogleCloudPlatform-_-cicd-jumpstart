@@ -21,6 +21,12 @@ variable "enable_apis" {
   default     = true
 }
 
+variable "labels" {
+  type        = map(string)
+  description = "Common labels to be applied to resources."
+  default     = {}
+}
+
 variable "namespace" {
   type        = string
   description = "A prefix to be added to resource names to ensure uniqueness."

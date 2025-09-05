@@ -35,13 +35,26 @@ locals {
     local.artifact_registry_project_id,
     data.google_artifact_registry_repository.container_repository.repository_id
   )
-  build_project_id                = data.google_project.project.project_id
-  cloud_deploy_apps               = { for key, value in var.apps : key => value if contains(local.cloud_deploy_supported_runtimes, value.runtime) }
+  build_project_id = data.google_project.project.project_id
+  cloud_deploy_apps = {
+    for key, value in var.apps : key => value
+    if contains(local.cloud_deploy_supported_runtimes, value.runtime)
+  }
   cloud_deploy_supported_runtimes = ["cloudrun", "gke"]
-  github_source                   = var.github_owner != null && var.github_repo != null
-  kms_project_id                  = data.google_project.project.project_id
-  prefix                          = var.namespace == "" ? "" : "${var.namespace}-"
-  workstation_apps                = { for k, v in var.apps : k => v if v.runtime == "workstations" }
+  # merge the default labels with the user-provided labels and convert to lowercase
+  common_labels = {
+    for k, v in merge(var.labels, local.default_labels) : lower(k) => lower(v)
+  }
+  default_labels = {
+    "tf_module_github_org"  = "GoogleCloudPlatform"
+    "tf_module_github_repo" = "cicd-foundation"
+    "tf_module_name"        = "cicd_pipelines"
+    "tf_module_version"     = "v3-0-0"
+  }
+  github_source    = var.github_owner != null && var.github_repo != null
+  kms_project_id   = data.google_project.project.project_id
+  prefix           = var.namespace == "" ? "" : "${var.namespace}-"
+  workstation_apps = { for k, v in var.apps : k => v if v.runtime == "workstations" }
   # go/keep-sorted end
 }
 

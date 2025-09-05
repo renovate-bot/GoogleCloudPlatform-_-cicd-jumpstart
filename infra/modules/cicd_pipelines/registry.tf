@@ -25,12 +25,14 @@ module "docker_artifact_registry" {
       standard = {}
     }
   }
+  labels = local.common_labels
 }
 
 data "google_artifact_registry_repository" "container_repository" {
   project       = local.artifact_registry_project_id
   location      = var.artifact_registry_region
   repository_id = var.artifact_registry_name == null ? module.docker_artifact_registry[0].name : var.artifact_registry_name
+
   depends_on = [
     module.docker_artifact_registry
   ]

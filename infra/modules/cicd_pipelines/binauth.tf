@@ -51,6 +51,13 @@ resource "google_kms_crypto_key" "vulnz_attestor_key" {
   version_template {
     algorithm = var.kms_signing_alg
   }
+  labels = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      labels,
+    ]
+  }
 }
 
 resource "google_kms_crypto_key_iam_member" "vulnz_attestor" {
