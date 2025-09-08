@@ -207,9 +207,21 @@ variable "github_repo" {
 }
 
 variable "secure_source_manager_instance_name" {
-  description = "The name of the Secure Source Manager instance."
   type        = string
+  description = "The name of the Secure Source Manager instance."
   default     = "cicd-foundation"
+}
+
+variable "secure_source_manager_repo_deletion_policy" {
+  type        = string
+  description = "The deletion policy for the Secure Source Manager repository. One of DELETE, PREVENT, or ABANDON."
+  default     = "PREVENT"
+}
+
+variable "secure_source_manager_repo_name" {
+  type        = string
+  description = "The name of the Secure Source Manager repository."
+  default     = "repository"
 }
 # go/keep-sorted end
 

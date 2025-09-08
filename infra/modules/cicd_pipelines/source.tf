@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "google_secure_source_manager_instance" "source" {
+locals {
+  cloud_build_service_agent = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+}
+
+resource "google_secure_source_manager_instance" "cicd_foundation" {
   project     = data.google_project.project.project_id
   location    = var.secure_source_manager_region
   instance_id = "${local.prefix}${var.secure_source_manager_instance_name}"
@@ -23,6 +27,31 @@ resource "google_secure_source_manager_instance" "source" {
       labels,
     ]
   }
+}
+
+resource "google_secure_source_manager_instance_iam_binding" "instance_accessor" {
+  project     = google_secure_source_manager_instance.cicd_foundation.project
+  location    = google_secure_source_manager_instance.cicd_foundation.location
+  instance_id = google_secure_source_manager_instance.cicd_foundation.instance_id
+  role        = "roles/securesourcemanager.instanceAccessor"
+  members     = [module.service_account_cloud_build.iam_email]
+}
+
+resource "google_secure_source_manager_repository" "cicd_foundation" {
+  project       = google_secure_source_manager_instance.cicd_foundation.project
+  location      = google_secure_source_manager_instance.cicd_foundation.location
+  instance      = google_secure_source_manager_instance.cicd_foundation.name
+  repository_id = var.secure_source_manager_repo_name
+
+  deletion_policy = var.secure_source_manager_repo_deletion_policy
+}
+
+resource "google_secure_source_manager_repository_iam_binding" "repo_reader" {
+  project       = google_secure_source_manager_repository.cicd_foundation.project
+  location      = google_secure_source_manager_repository.cicd_foundation.location
+  repository_id = google_secure_source_manager_repository.cicd_foundation.repository_id
+  role          = "roles/securesourcemanager.repoReader"
+  members       = [module.service_account_cloud_build.iam_email]
 }
 
 resource "google_secret_manager_secret" "webhook_trigger" {

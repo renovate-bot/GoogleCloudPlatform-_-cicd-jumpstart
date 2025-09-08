@@ -17,28 +17,49 @@
 # go/keep-sorted start block=yes newline_separated=yes
 output "secure_source_manager_instance_git_http" {
   description = "The Git HTTP URI of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.source.host_config[0].git_http
+  value       = google_secure_source_manager_instance.cicd_foundation.host_config[0].git_http
 }
 
 output "secure_source_manager_instance_git_ssh" {
   description = "The Git SSH URI of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.source.host_config[0].git_ssh
+  value       = google_secure_source_manager_instance.cicd_foundation.host_config[0].git_ssh
 }
 
 output "secure_source_manager_instance_html" {
   description = "The HTML hostname of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.source.host_config[0].html
+  value       = google_secure_source_manager_instance.cicd_foundation.host_config[0].html
 }
 
 output "secure_source_manager_instance_id" {
   description = "The ID of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.source.id
+  value       = google_secure_source_manager_instance.cicd_foundation.id
+}
+
+output "secure_source_manager_repository_git_html" {
+  description = "The Git HTML URI of the created Secure Source Manager repository."
+  value       = google_secure_source_manager_repository.cicd_foundation.uris[0].html
+}
+
+output "secure_source_manager_repository_git_https" {
+  description = "The Git HTTP URI of the created Secure Source Manager repository."
+  value       = google_secure_source_manager_repository.cicd_foundation.uris[0].git_https
+}
+
+output "secure_source_manager_repository_id" {
+  description = "The ID of the created Secure Source Manager repository."
+  value       = google_secure_source_manager_repository.cicd_foundation.id
 }
 # go/keep-sorted end
 
 # Cloud Build
 
 # go/keep-sorted start block=yes newline_separated=yes
+output "cloud_build_api_key" {
+  description = "The API key for Cloud Build webhook triggers."
+  value       = local.github_source ? null : google_apikeys_key.cloudbuild[0].key_string
+  sensitive   = true
+}
+
 output "cloud_build_service_account_email" {
   description = "The email of the Cloud Build service account."
   value       = module.service_account_cloud_build.email
@@ -72,6 +93,17 @@ output "cloud_build_trigger_trigger_id" {
 output "cloud_build_worker_pool_ids" {
   description = "A map of Cloud Build Worker Pool IDs, keyed by stage name."
   value       = { for k, v in google_cloudbuild_worker_pool.pool : k => v.id }
+}
+
+output "webhook_trigger_secret_id" {
+  description = "The ID of the webhook trigger secret."
+  value       = google_secret_manager_secret.webhook_trigger.id
+}
+
+output "webhook_trigger_secret_key" {
+  description = "The random key for the webhook trigger secret."
+  value       = random_id.webhook_secret_key.hex
+  sensitive   = true
 }
 # go/keep-sorted end
 
