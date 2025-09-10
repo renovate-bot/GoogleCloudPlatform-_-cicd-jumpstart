@@ -16,7 +16,6 @@ locals {
   # go/keep-sorted start
   activate_apis = concat([
     "secretmanager.googleapis.com",
-    "securesourcemanager.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudkms.googleapis.com",
     "artifactregistry.googleapis.com",
@@ -24,9 +23,10 @@ locals {
     "containerscanning.googleapis.com",
     "ondemandscanning.googleapis.com",
     "binaryauthorization.googleapis.com",
-    "clouddeploy.googleapis.com",
     ],
-    length(local.workstation_apps) > 0 ? ["cloudscheduler.googleapis.com"] : []
+    length(local.cloud_deploy_apps) > 0 ? ["clouddeploy.googleapis.com"] : [],
+    length(local.workstation_apps) > 0 ? ["cloudscheduler.googleapis.com"] : [],
+    local.github_source ? [] : ["apikeys.googleapis.com", "securesourcemanager.googleapis.com"]
   )
   artifact_registry_project_id = data.google_project.project.project_id
   artifact_registry_repository_uri = format(
@@ -90,4 +90,17 @@ module "project_services" {
   depends_on = [
     module.project_services_cloud_resourcemanager
   ]
+}
+
+resource "google_apikeys_key" "cloudbuild" {
+  count = local.github_source ? 0 : 1
+
+  name         = "cloudbuild"
+  display_name = "API key for Cloud Build"
+  project      = data.google_project.project.project_id
+  restrictions {
+    api_targets {
+      service = "cloudbuild.googleapis.com"
+    }
+  }
 }
