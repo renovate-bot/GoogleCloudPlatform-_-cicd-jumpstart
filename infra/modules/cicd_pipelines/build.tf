@@ -13,7 +13,9 @@
 # limitations under the License.
 
 locals {
-  policy_content = var.kritis_policy_file == null ? var.kritis_policy_default : file(var.kritis_policy_file)
+  has_kritis_signer = var.kritis_signer_image != null && var.kritis_signer_image != ""
+  policy_content    = var.kritis_policy_file == null ? var.kritis_policy_default : file(var.kritis_policy_file)
+  source_uri        = local.github_source ? "https://github.com/${var.github_owner}/${var.github_repo}.git" : google_secure_source_manager_repository.cicd_foundation.uris[0].git_https
 }
 
 # cf. https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts
@@ -79,11 +81,35 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
       secret = google_secret_manager_secret_version.webhook_trigger.id
     }
   }
+  source_to_build {
+    uri       = local.source_uri
+    ref       = "refs/heads/${var.git_branch_trigger}"
+    repo_type = local.github_source ? "GITHUB" : "UNKNOWN"
+  }
   build {
+    dynamic "step" {
+      for_each = local.github_source ? [] : [1]
+
+      content {
+        id         = "clone"
+        name       = "gcr.io/cloud-builders/git"
+        entrypoint = "/bin/sh"
+        args = [
+          "-c",
+          <<-EOT
+            git clone "$${_GIT_CLONE_URL}" /workspace
+            if [ -n "$${COMMIT_SHA}" ]; then
+              cd /workspace
+              git reset --hard "$${COMMIT_SHA}"
+            fi
+          EOT
+        ]
+      }
+    }
     step {
-      id   = "build"
-      dir  = try(each.value.build.dockerfile_path, "apps/${each.key}")
-      name = "gcr.io/k8s-skaffold/skaffold:$${_SKAFFOLD_IMAGE_TAG}"
+      id         = "build"
+      dir        = try(each.value.build.dockerfile_path, "apps/${each.key}")
+      name       = "gcr.io/k8s-skaffold/skaffold:$${_SKAFFOLD_IMAGE_TAG}"
       entrypoint = "/bin/sh"
       args = [
         "-c",
@@ -119,7 +145,7 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
       ]
     }
     dynamic "step" {
-      for_each = var.kritis_signer_image == null || var.kritis_signer_image == "" ? [] : [1]
+      for_each = local.has_kritis_signer ? [1] : []
 
       content {
         id         = "vulnsign"
@@ -155,7 +181,7 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
 
       content {
         id         = "createRelease"
-        wait_for   = [var.kritis_signer_image == null || var.kritis_signer_image == "" ? "fetchImageDigest" : "vulnsign"]
+        wait_for   = [local.has_kritis_signer ? "vulnsign" : "fetchImageDigest"]
         dir        = try(each.value.build.dockerfile_path, "apps/${each.key}")
         name       = "gcr.io/google.com/cloudsdktool/cloud-sdk:$${_GCLOUD_IMAGE_TAG}"
         entrypoint = "/bin/sh"
@@ -189,6 +215,7 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
     _DOCKERFILE_PATH       = try(each.value.build.dockerfile_path, "apps/${each.key}")
     _DOCKER_IMAGE_TAG      = var.docker_image_tag
     _GCLOUD_IMAGE_TAG      = var.gcloud_image_tag
+    _GIT_CLONE_URL         = local.github_source ? "" : local.source_uri
     _KMS_DIGEST_ALG        = var.kms_digest_alg
     _KMS_KEY_NAME          = var.kms_key_name
     _KRITIS_POLICY_BASE64  = base64encode(local.policy_content)
