@@ -94,7 +94,7 @@ variable "apps" {
       # The relative path to the Dockerfile within the repository.
       dockerfile_path = optional(string)
       # The timeout for the build in seconds.
-      timeout = number
+      timeout_seconds = number
       # The machine type to use for the build.
       machine_type = string
       })
@@ -391,7 +391,7 @@ variable "artifact_registry_readers" {
 # Cloud Deploy
 
 # go/keep-sorted start block=yes newline_separated=yes
-variable "canary_route_update_wait_time" {
+variable "canary_route_update_wait_time_seconds" {
   type        = number
   description = "The time (in seconds) to wait for network route updates during GKE canary deployments."
   default     = 60

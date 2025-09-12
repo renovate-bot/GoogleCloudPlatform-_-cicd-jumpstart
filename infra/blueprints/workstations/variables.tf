@@ -101,7 +101,7 @@ variable "docker_image_tag" {
   default     = "20.10.24"
 }
 
-variable "build_timeout_default" {
+variable "build_timeout_default_seconds" {
   description = "the default timeout in seconds for the Cloud Build build step"
   type        = number
   default     = 7200
@@ -117,8 +117,8 @@ variable "apps" {
   description = "Map of applications as found within the apps/ folder, their build configuration, runtime, deployment stages and parameters."
   type = map(object({
     build = optional(object({
-      timeout      = number
-      machine_type = string
+      timeout_seconds = number
+      machine_type    = string
       })
     )
     runtime = optional(string, "cloudrun")
@@ -127,15 +127,15 @@ variable "apps" {
   default = {
     "asfp" : {
       build = {
-        timeout      = 7200
-        machine_type = "E2_HIGHCPU_32"
+        timeout_seconds = 7200
+        machine_type    = "E2_HIGHCPU_32"
       }
       runtime = "workstation"
     },
     "asfp-ubuntu22" : {
       build = {
-        timeout      = 7200
-        machine_type = "E2_HIGHCPU_32"
+        timeout_seconds = 7200
+        machine_type    = "E2_HIGHCPU_32"
       }
       runtime = "workstation"
     }
@@ -214,7 +214,7 @@ variable "ws_pool_size" {
   default     = 1
 }
 
-variable "ws_idle_time" {
+variable "ws_idle_time_seconds" {
   description = "Cloud Workstations idle timeout in seconds"
   type        = number
   default     = 1800

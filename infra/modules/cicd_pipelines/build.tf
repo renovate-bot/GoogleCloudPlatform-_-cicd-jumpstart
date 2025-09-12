@@ -199,7 +199,7 @@ resource "google_cloudbuild_trigger" "continuous_integration" {
         ]
       }
     }
-    timeout = try("${each.value.build.timeout}s", "${var.build_timeout_default_seconds}s")
+    timeout = try("${each.value.build.timeout_seconds}s", "${var.build_timeout_default_seconds}s")
     options {
       requested_verify_option = "VERIFIED"
       logging                 = "CLOUD_LOGGING_ONLY"

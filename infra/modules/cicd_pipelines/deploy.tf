@@ -139,7 +139,7 @@ resource "google_clouddeploy_delivery_pipeline" "continuous_delivery" {
                   gateway_service_mesh {
                     deployment             = each.key
                     http_route             = each.key
-                    route_update_wait_time = "${var.canary_route_update_wait_time}s"
+                    route_update_wait_time = "${var.canary_route_update_wait_time_seconds}s"
                     service                = each.key
                   }
                 }

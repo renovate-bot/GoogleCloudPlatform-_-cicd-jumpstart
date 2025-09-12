@@ -42,18 +42,3 @@ aosp_targets = {
   # "x86-userdebug" : "aosp_cf_x86_64_phone-trunk_staging-userdebug",
   # "arm64-eng" : "aosp_cf_x86_64_phone-trunk_staging-eng",
 }
-
-apps = {
-  "asfp" : {
-    build = {
-      timeout      = 7200
-      machine_type = "E2_HIGHCPU_32"
-    }
-    runtime = "workstation"
-  },
-}
-
-ws_config_name_default = "asfp"
-# ws_config_disable_public_ip = false
-# ws_pd_disk_reclaim_policy = "DELETE"
-ws_pd_disk_snapshot_id = "projects/REPLACE_WITH_YOUR_PROJECT_ID/global/snapshots/REPLACE_WITH_YOUR_SNAPSHOT"

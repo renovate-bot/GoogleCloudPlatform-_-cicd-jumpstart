@@ -40,7 +40,7 @@ resource "google_workstations_workstation_config" "admins" {
   workstation_config_id  = each.value.name
   workstation_cluster_id = google_workstations_workstation_cluster.cluster.workstation_cluster_id
   location               = google_workstations_workstation_cluster.cluster.location
-  idle_timeout           = "${var.ws_idle_time}s"
+  idle_timeout           = "${var.ws_idle_time_seconds}s"
   host {
     gce_instance {
       machine_type                 = var.ws_config_machine_type
@@ -72,7 +72,7 @@ resource "google_workstations_workstation_config" "users" {
   workstation_config_id  = "${each.value.name}-prebuilt"
   workstation_cluster_id = google_workstations_workstation_cluster.cluster.workstation_cluster_id
   location               = google_workstations_workstation_cluster.cluster.location
-  idle_timeout           = "${var.ws_idle_time}s"
+  idle_timeout           = "${var.ws_idle_time_seconds}s"
   host {
     gce_instance {
       machine_type                 = var.ws_config_machine_type
