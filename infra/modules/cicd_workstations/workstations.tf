@@ -23,6 +23,7 @@ locals {
         for instance in config_value.instances : {
           resource_key = "${config_key}-${instance.name}"
           ws_name      = instance.name
+          display_name = coalesce(instance.display_name, config_value.display_name)
           config_key   = config_key
           users        = instance.users
         }
@@ -64,6 +65,7 @@ resource "google_workstations_workstation_config" "config" {
   workstation_config_id  = each.key
   workstation_cluster_id = local.config_to_cluster_map[each.key].workstation_cluster_id
   location               = local.config_to_cluster_map[each.key].location
+  display_name           = each.value.display_name
   idle_timeout           = "${each.value.idle_timeout_seconds}s"
   dynamic "container" {
     for_each = each.value.image != null ? [1] : []
@@ -138,6 +140,7 @@ resource "google_workstations_workstation" "workstation" {
   location               = local.config_to_cluster_map[each.value.config_key].location
   workstation_config_id  = google_workstations_workstation_config.config[each.value.config_key].workstation_config_id
   workstation_id         = each.value.ws_name
+  display_name           = each.value.display_name
   labels                 = local.common_labels
 
   lifecycle {

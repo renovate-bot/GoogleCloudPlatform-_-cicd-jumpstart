@@ -17,12 +17,6 @@ variable "project_id" {
   description = "Project-ID that references existing project for deploying Cloud Workstations."
 }
 
-variable "cws_service_account_name" {
-  type        = string
-  description = "Name of the Cloud Workstations Service Account"
-  default     = "workstations"
-}
-
 variable "enable_apis" {
   type        = bool
   description = "Whether to enable the required APIs for the module."
@@ -33,6 +27,12 @@ variable "labels" {
   type        = map(string)
   description = "Common labels to be applied to resources."
   default     = {}
+}
+
+variable "cws_service_account_name" {
+  type        = string
+  description = "Name of the Cloud Workstations Service Account"
+  default     = "workstations"
 }
 
 variable "cws_scopes" {
@@ -53,24 +53,28 @@ variable "cws_clusters" {
 
 variable "cws_configs" {
   type = map(object({
-    cws_cluster                     = string
-    idle_timeout_seconds            = number
-    machine_type                    = string
+    # go/keep-sorted start
     boot_disk_size_gb               = number
-    disable_public_ip_addresses     = bool
-    pool_size                       = number
-    enable_nested_virtualization    = bool
-    persistent_disk_size_gb         = optional(number)
-    persistent_disk_fs_type         = optional(string)
-    persistent_disk_type            = string
-    persistent_disk_reclaim_policy  = string
-    persistent_disk_source_snapshot = optional(string)
-    image                           = optional(string)
     creators                        = optional(list(string))
+    cws_cluster                     = string
+    disable_public_ip_addresses     = bool
+    display_name                    = optional(string)
+    enable_nested_virtualization    = bool
+    idle_timeout_seconds            = number
+    image                           = optional(string)
     instances = optional(list(object({
       name  = string
+      display_name = optional(string)
       users = list(string)
     })))
+    machine_type                    = string
+    persistent_disk_fs_type         = optional(string)
+    persistent_disk_reclaim_policy  = string
+    persistent_disk_size_gb         = optional(number)
+    persistent_disk_source_snapshot = optional(string)
+    persistent_disk_type            = string
+    pool_size                       = number
+    # go/keep-sorted end
   }))
   description = "A map of Cloud Workstation configurations."
   default     = {}
