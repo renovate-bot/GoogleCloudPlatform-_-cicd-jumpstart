@@ -12,281 +12,228 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable "region" {
-  description = "Compute region used."
-  type        = string
-  default     = "us-west1"
+# General Project & Naming
+
+variable "enable_apis" {
+  type        = bool
+  description = "Whether to enable the required APIs for the module."
+  default     = true
 }
 
 variable "project_id" {
+  type        = string
   description = "Project-ID that references existing project."
+}
+
+# Location/Region Variables
+
+variable "region" {
   type        = string
+  description = "Compute region used."
+  default     = "us-central1"
 }
 
-variable "registry_id" {
-  description = "String used to name Artifact Registry."
+variable "secure_source_manager_region" {
   type        = string
-  default     = "registry"
+  description = "The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations."
+  default     = "us-central1"
 }
 
-variable "admins" {
-  description = "Google Identities of the Cloud Workstation admins"
-  type        = list(string)
-  default     = []
+# Networking
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "create_vpc" {
+  type        = bool
+  description = "Flag indicating whether the VPC should be created or not."
+  default     = true
 }
 
-variable "users" {
-  description = "Google Identities of the Cloud Workstation user"
-  type        = list(string)
-  default     = []
-}
-
-variable "github_owner" {
-  description = "Owner of the GitHub repo: usually, your GitHub username."
+variable "psa_cidr" {
   type        = string
-  default     = ""
+  description = "PSA CIDR range"
+  default     = "10.60.0.0/16"
 }
 
-variable "github_repo" {
-  description = "Name of the (forked) GitHub repository."
+variable "subnet_cidr" {
   type        = string
-  default     = ""
+  description = "CIDR for the primary subnet in the VPC"
+  default     = "10.8.0.0/16"
 }
 
-variable "ssm_instance_name" {
-  description = "name of the Secure Source Manager instance"
+variable "subnet_name" {
   type        = string
-  default     = "workstation-images"
+  description = "Name of the Virtual Private Cloud (VPC) network for the workstation in a region."
+  default     = "primary"
 }
 
-variable "repo_name" {
-  description = "name of the Git repository"
+variable "vpc_name" {
   type        = string
-  default     = "aosp"
+  description = "Name of the Virtual Private Cloud (VPC) network for the workstation."
+  default     = "workstations"
+}
+# go/keep-sorted end
+
+# Artifact Registry
+variable "artifact_registry_repository_id" {
+  type        = string
+  description = "The ID of the Artifact Registry repository for container images."
+  default     = "cloud-workstations-images"
 }
 
+# Source Control (GitHub & Secure Source Manager)
+
+# go/keep-sorted start block=yes newline_separated=yes
 variable "git_branch_trigger" {
-  description = "Branch used for the Cloud Build trigger. Used by Secure Source Manager (SSM) and Cloud Scheduler."
   type        = string
+  description = "The Secure Source Manager (SSM) branch that triggers Cloud Build on push."
   default     = "main"
 }
 
-variable "git_branch_trigger_regexp" {
-  description = "Regular expression for the Cloud Build trigger. Not used by Secure Source Manager (SSM)."
+variable "git_branches_regexp_trigger" {
   type        = string
+  description = "A regular expression to match GitHub branches that trigger Cloud Build on push."
   default     = "^main$"
 }
 
-variable "skaffold_output" {
-  description = "the artifacts json output filename from skaffold"
+variable "github_owner" {
   type        = string
-  default     = "artifacts.json"
+  description = "The owner of the GitHub repository (user or organization)."
+  default     = null
 }
 
-variable "skaffold_quiet" {
-  description = "suppress Skaffold output"
-  type        = bool
-  default     = false
-}
-
-variable "skaffold_image_tag" {
-  description = "Tag of the Skaffold container image"
+variable "github_repo" {
   type        = string
-  default     = "v2.13.2-lts"
+  description = "The name of the GitHub repository."
+  default     = null
 }
 
-variable "docker_image_tag" {
-  description = "Tag of the Docker container image"
+variable "secure_source_manager_instance_name" {
   type        = string
-  default     = "20.10.24"
+  description = "The name of the Secure Source Manager instance."
+  default     = "workstation-images"
+}
+# go/keep-sorted end
+
+# Cloud Workstations Clusters
+
+variable "cws_clusters" {
+  type = map(object({
+    network    = string
+    region     = string
+    subnetwork = string
+  }))
+  description = "A map of Cloud Workstation clusters to create. The key of the map is used as the unique ID for the cluster."
+  default     = {}
 }
 
-variable "build_timeout_default_seconds" {
-  description = "the default timeout in seconds for the Cloud Build build step"
-  type        = number
-  default     = 7200
+# Cloud Workstations Configs and instances
+
+variable "cws_configs" {
+  type = map(object({
+    cws_cluster                     = string
+    idle_timeout_seconds            = optional(number, 7200)
+    machine_type                    = optional(string, "n1-standard-96")
+    boot_disk_size_gb               = optional(number, 2000)
+    disable_public_ip_addresses     = optional(bool, false)
+    pool_size                       = optional(number, 0)
+    enable_nested_virtualization    = optional(bool, true)
+    persistent_disk_size_gb         = optional(number)
+    persistent_disk_fs_type         = optional(string)
+    persistent_disk_type            = string
+    persistent_disk_reclaim_policy  = string
+    persistent_disk_source_snapshot = optional(string)
+    image                           = optional(string)
+    creators                        = optional(list(string))
+    instances = optional(list(object({
+      name  = string
+      users = list(string)
+    })))
+  }))
+  description = "A map of Cloud Workstation configurations."
+  default     = {}
+  validation {
+    condition = alltrue([
+      for k, v in var.cws_configs :
+      v.persistent_disk_source_snapshot == null || (v.persistent_disk_size_gb == null && v.persistent_disk_fs_type == null)
+    ])
+    error_message = "If persistent_disk_source_snapshot is provided, persistent_disk_size_gb and persistent_disk_fs_type must not be set."
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.cws_configs :
+      v.persistent_disk_source_snapshot != null || (v.persistent_disk_size_gb != null && v.persistent_disk_fs_type != null)
+    ])
+    error_message = "If persistent_disk_source_snapshot is not provided, persistent_disk_size_gb and persistent_disk_fs_type must both be set."
+  }
 }
 
-variable "build_machine_type_default" {
-  description = "the default machine type to use for Cloud Build build"
-  type        = string
-  default     = "UNSPECIFIED"
-}
+# Custom images for Cloud Workstations
 
-variable "apps" {
-  description = "Map of applications as found within the apps/ folder, their build configuration, runtime, deployment stages and parameters."
+variable "cws_custom_images" {
   type = map(object({
     build = optional(object({
+      dockerfile_path = optional(string)
       timeout_seconds = number
       machine_type    = string
       })
     )
-    runtime = optional(string, "cloudrun")
-    stages  = optional(map(map(string)))
+    workstation_config = optional(object({
+      scheduler_region = string
+      ci_schedule      = string
+    }))
   }))
+  description = <<-EOT
+    Map of applications as found within the apps/ folder of the repository,
+    their build configuration, runtime, deployment stages and parameters.
+  EOT
   default = {
-    "asfp" : {
+    // go/keep-sorted start block=yes
+    "android-studio" : {
       build = {
+        dockerfile_path = "examples/images/android/android-studio"
         timeout_seconds = 7200
         machine_type    = "E2_HIGHCPU_32"
       }
-      runtime = "workstation"
     },
-    "asfp-ubuntu22" : {
+    "android-studio-for-platform" : {
       build = {
+        dockerfile_path = "examples/images/android-open-source-project/android-studio-for-platform"
         timeout_seconds = 7200
         machine_type    = "E2_HIGHCPU_32"
       }
-      runtime = "workstation"
-    }
+    },
+    "code-oss" : {
+      build = {
+        dockerfile_path = "examples/images/android-open-source-project/code-oss"
+        timeout_seconds = 7200
+        machine_type    = "E2_HIGHCPU_32"
+      }
+    },
+    "repo-builder" : {
+      build = {
+        dockerfile_path = "examples/images/android-open-source-project/repo-builder"
+        timeout_seconds = 7200
+        machine_type    = "E2_HIGHCPU_32"
+      }
+    },
+    // go/keep-sorted end
   }
 }
 
-variable "project_services" {
-  description = "Service APIs to enable"
+## Android Platform Development
+
+variable "android_branches" {
   type        = list(string)
-  default = [
-    "artifactregistry.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "cloudscheduler.googleapis.com",
-    "compute.googleapis.com",
-    "workstations.googleapis.com",
-  ]
-}
-
-variable "sa_cb_name" {
-  description = "name of Cloud Build Service Account(s)"
-  type        = string
-  default     = "sa-cloudbuild"
-}
-
-variable "vpc_name" {
-  description = "Name of the Virtual Private Cloud (VPC) network for the workstation."
-  type        = string
-  default     = "workstations"
-}
-
-variable "vpc_create" {
-  description = "Flag indicating whether the VPC should be created or not."
-  type        = bool
-  default     = true
-}
-
-variable "subnet_name" {
-  description = "Name of the Virtual Private Cloud (VPC) network for the workstation in a region."
-  type        = string
-  default     = "primary"
-}
-
-variable "subnet_cidr" {
-  description = "CIDR for the primary subnet in the VPC"
-  type        = string
-  default     = "10.8.0.0/16"
-}
-
-variable "psa_cidr" {
-  description = "PSA CIDR range"
-  type        = string
-  default     = "10.60.0.0/16"
-}
-
-variable "sa_ws_name" {
-  description = "name of the Cloud Workstations Service Account"
-  type        = string
-  default     = "sa-workstations"
-}
-
-variable "ws_cluster_name" {
-  description = "name of the Cloud Workstations cluster"
-  type        = string
-  default     = "cluster"
-}
-
-variable "ws_config_name_default" {
-  description = "name of the default Cloud Workstations config"
-  type        = string
-  default     = "asfp"
-}
-
-variable "ws_pool_size" {
-  description = "Cloud Workstations pool size (to speed up startup time)"
-  type        = number
-  default     = 1
-}
-
-variable "ws_idle_time_seconds" {
-  description = "Cloud Workstations idle timeout in seconds"
-  type        = number
-  default     = 1800
-}
-
-variable "ws_config_machine_type" {
-  description = "machine type of Cloud Workstations instance"
-  type        = string
-  default     = "n1-standard-96"
-}
-
-variable "ws_config_boot_disk_size_gb" {
-  description = "disk size of Cloud Workstations instance"
-  type        = number
-  default     = 35
-}
-
-variable "ws_nested_virtualization" {
-  description = "nested virtualization to be enabled for Workstations?"
-  type        = bool
-  default     = true
-}
-
-variable "ws_image_tag" {
-  description = "the container image tag for the Cloud Workstation"
-  type        = string
-  default     = "latest"
-}
-
-variable "ws_pd_disk_size_gb" {
-  description = "disk size of Cloud Workstations mounted persistent disk"
-  type        = number
-  default     = 1000
-}
-
-variable "ws_pd_disk_type" {
-  description = "disk type of the Cloud Workstations persistent disk"
-  type        = string
-  default     = "pd-ssd"
-}
-
-variable "ws_pd_disk_fs_type" {
-  description = "filesystem type of the Cloud Workstations persistent disk"
-  type        = string
-  default     = "ext4"
-}
-
-variable "ws_pd_disk_reclaim_policy" {
-  description = "reclaim policy of the Cloud Workstations persistent disk"
-  type        = string
-  default     = "RETAIN"
-}
-
-variable "ws_pd_disk_snapshot_id" {
-  description = "Disk snapshot to use for Cloud Workstations"
-  type        = string
-}
-
-variable "ws_config_disable_public_ip" {
-  description = "private Cloud Workstations instance?"
-  type        = bool
-  default     = true
-}
-
-variable "aosp_branches" {
-  description = "Android Open Source Project branches to build"
-  type        = list(string)
+  description = "Android branches to build"
   default     = []
 }
 
-variable "aosp_targets" {
-  description = "Android Open Source Project targets to build. The keys of this maps are used for the names of the Workstation Configs. The values are the actual lunch targets."
+variable "android_targets" {
   type        = map(string)
+  description = <<-EOT
+    Android `lunch` targets to build.
+    The keys of this maps are used for the names of the Workstation Configs.
+    The values are the actual lunch targets.
+  EOT
   default     = {}
 }

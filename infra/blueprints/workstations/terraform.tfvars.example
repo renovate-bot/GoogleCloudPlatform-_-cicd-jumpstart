@@ -12,33 +12,146 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This is an example tfvars file. Copy this to terraform.tfvars and adjust the values.
+
+# Required: The Google Cloud Project ID to deploy the resources into.
 project_id = "REPLACE_WITH_YOUR_PROJECT_ID"
 
-region = "us-west1"
+# Optional: The default region for resources. Defaults to "us-central1".
+# region = "europe-west1"
 
-# admins have the permissions to push to the repository
-admins = [
-  "alex@example.com",
-]
+# Optional: The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations.
+# secure_source_manager_region = "europe-west4"
 
-# users can create/use Cloud Workstation(s)
-users = [
-  "alex@example.com",
-]
+## Artifact Registry
+# Optional: The ID of the Artifact Registry repository for container images.
+# artifact_registry_repository_id = "my-workstation-images"
 
-# branch used by the scheduler
-git_branch_trigger = "main"
+## Source Control (GitHub & Secure Source Manager)
 
-# push to branch triggering a build
-git_branch_trigger_regexp = "^.*$"
+# Optional: The owner of the GitHub repository (user or organization).
+# github_owner = "my-github-org"
 
-aosp_branches = [
+# Optional: The name of the GitHub repository.
+# github_repo = "my-image-examples"
+
+# Optional: A regular expression to match GitHub branches that trigger Cloud Build on push.
+# git_branches_regexp_trigger = "^dev$"
+
+# Optional: The name of the Secure Source Manager instance.
+# secure_source_manager_instance_name = "my-ssm-instance"
+
+# Optional: The Secure Source Manager (SSM) branch that triggers Cloud Build on push.
+# git_branch_trigger = "dev"
+
+# Cloud Workstations
+
+# Cloud Workstations Clusters
+cws_clusters = {
+  "android-cluster" = {
+    network    = "default"
+    region     = "us-central1"
+    subnetwork = "default"
+  }
+}
+
+# Cloud Workstations Configs
+cws_configs = {
+  "default-config" = {
+    cws_cluster = "android-cluster"
+    # idle_timeout_seconds           = 7200
+    # machine_type                   = "e2-standard-4"
+    # boot_disk_size_gb              = 50
+    # disable_public_ip_addresses    = false
+    # pool_size                      = 1
+    # enable_nested_virtualization   = false
+    persistent_disk_size_gb        = 200
+    persistent_disk_fs_type        = "ext4"
+    persistent_disk_type           = "pd-standard"
+    persistent_disk_reclaim_policy = "DELETE"
+    # persistent_disk_source_snapshot = null
+    # image                          = "us-central1-docker.pkg.dev/cloud-workstations-images/predefined/code-oss:latest"
+    creators = [
+      "user1@example.com",
+      "user2@example.com",
+    ]
+    instances = [
+      {
+        name  = "user1-ws"
+        users = ["user1@example.com"]
+      },
+      {
+        name  = "shared-ws"
+        users = ["user1@example.com", "user2@example.com"]
+      }
+    ]
+  },
+  "snapshot-config" = {
+    cws_cluster = "main-cluster"
+    # idle_timeout_seconds           = 7200
+    # machine_type                   = "n1-standard-4"
+    # boot_disk_size_gb              = 100
+    # disable_public_ip_addresses    = false
+    # pool_size                      = 0
+    # enable_nested_virtualization   = true
+    # persistent_disk_size_gb        = null
+    # persistent_disk_fs_type        = null
+    persistent_disk_type           = "pd-ssd"
+    persistent_disk_reclaim_policy = "RETAIN"
+    persistent_disk_source_snapshot = "projects/my-project/global/snapshots/my-snapshot"
+    # image                          = null # Uses default image
+    creators = [
+      "admin@example.com",
+    ]
+    # instances = [] # No pre-defined instances
+  }
+}
+
+# Custom images for Cloud Workstations
+cws_custom_images = {
+  "android-studio" : {
+    build = {
+      dockerfile_path = "examples/images/android/android-studio"
+      timeout_seconds = 7200
+      machine_type    = "E2_HIGHCPU_32"
+    }
+    # workstation_config = {
+    #   scheduler_region = "us-central1"
+    #   ci_schedule      = "0 1 * * *" # Daily at 1 AM
+    # }
+  },
+  "android-studio-for-platform" : {
+    build = {
+      dockerfile_path = "examples/images/android-open-source-project/android-studio-for-platform"
+      timeout_seconds = 7200
+      machine_type    = "E2_HIGHCPU_32"
+    }
+  },
+  "code-oss" : {
+    build = {
+      dockerfile_path = "examples/images/android-open-source-project/code-oss"
+      timeout_seconds = 7200
+      machine_type    = "E2_HIGHCPU_32"
+    }
+  },
+  "repo-builder" : {
+    build = {
+      dockerfile_path = "examples/images/android-open-source-project/repo-builder"
+      timeout_seconds = 7200
+      machine_type    = "E2_HIGHCPU_32"
+    }
+  },
+}
+
+## Android Platform Development
+
+android_branches = [
   # "main",
   # "feature2",
   # "user3",
 ]
 
-aosp_targets = {
+android_targets = {
   # "x86-userdebug" : "aosp_cf_x86_64_phone-trunk_staging-userdebug",
   # "arm64-eng" : "aosp_cf_x86_64_phone-trunk_staging-eng",
 }

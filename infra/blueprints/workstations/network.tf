@@ -13,10 +13,11 @@
 # limitations under the License.
 
 module "vpc" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc?ref=v36.0.1"
+
   project_id = var.project_id
   name       = var.vpc_name
-  vpc_create = var.vpc_create
+  vpc_create = var.create_vpc
   subnets = [
     {
       ip_cidr_range = var.subnet_cidr
@@ -32,7 +33,8 @@ module "vpc" {
 }
 
 module "fw" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc-firewall?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc-firewall?ref=v36.0.1"
+
   project_id = var.project_id
   network    = module.vpc.name
   factories_config = {

@@ -13,36 +13,106 @@
 # limitations under the License.
 
 locals {
-  images       = keys(var.apps)
-  target_names = keys(var.aosp_targets)
+  images       = keys(var.cws_custom_images)
+  target_names = keys(var.android_targets)
 
-  ws_configs = {
-    for item in setproduct(local.images, var.aosp_branches, local.target_names) :
-    "${lower(item[0])}-${lower(item[1])}-${lower(item[2])}" => {
-      # max 63 chars
-      name = "${lower(item[1])}-${lower(item[2])}"
+  artifact_registry_repository_uri = format(
+    "%s-docker.pkg.dev/%s/%s",
+    google_artifact_registry_repository.container_registry.location,
+    google_artifact_registry_repository.container_registry.project,
+    google_artifact_registry_repository.container_registry.repository_id
+  )
 
-      image  = item[0]
-      branch = item[1]
-      target = var.aosp_targets[item[2]]
-      app    = var.apps[item[0]]
-    } if var.apps[item[0]].runtime == "workstation"
+  # Generate all combinations of config, image, branch, and target
+  cws_combinations = flatten([
+    for config_key, config_value in var.cws_configs : [
+      for item in setproduct(local.images, var.android_branches, local.target_names) :
+      {
+        config_key   = config_key
+        config_value = config_value
+        image        = item[0]
+        branch       = item[1]
+        target       = item[2]
+      }
+    ]
+  ])
+
+  # Build the cws_configs_product map from the combinations
+  cws_configs_product = {
+    for combo in local.cws_combinations :
+    "${combo.config_key}-${lower(combo.image)}-${lower(combo.branch)}-${lower(combo.target)}" => merge(
+      combo.config_value,
+      {
+        image = "${local.artifact_registry_repository_uri}/${lower(combo.image)}:latest"
+        instances = [
+          {
+            # Generate a short, unique name for each workstation instance based on the combination.
+            # This involves splitting the config key, image, branch, and target by '-',
+            # taking the first 4 characters of each part, joining them with '-',
+            # and then truncating the result to a maximum of 12 characters.
+            name = join("-", [
+              lower(substr(join("-", [for part in split("-", combo.config_key) : substr(part, 0, 4)]), 0, 12)),
+              lower(substr(join("-", [for part in split("-", combo.image) : substr(part, 0, 4)]), 0, 12)),
+              lower(substr(join("-", [for part in split("-", combo.branch) : substr(part, 0, 4)]), 0, 12)),
+              lower(substr(join("-", [for part in split("-", combo.target) : substr(part, 0, 4)]), 0, 12)),
+              substr(sha256("${combo.config_key}-${combo.image}-${combo.branch}-${combo.target}"), 0, 4)
+            ])
+
+            display_name = "${combo.config_key}-${combo.image}-${combo.branch}-${combo.target}"
+
+            # The 'users' field is populated by flattening the 'users' lists from each instance
+            # defined within 'combo.config_value.instances'. These users are assumed to be the
+            # creators of the workstation instances. Defaults to an empty list if
+            # 'combo.config_value.instances' is null or empty.
+            users = (
+              combo.config_value.instances == null ?
+              [] :
+              flatten([
+                for instance in combo.config_value.instances : instance.users
+              ])
+            )
+          }
+        ]
+      }
+    )
   }
 }
 
-module "project" {
-  source         = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/project?ref=v36.0.1"
-  name           = var.project_id
-  project_create = false
-  services       = var.project_services
-  shared_vpc_host_config = {
-    enabled = false
-  }
+data "google_project" "project" {
+  project_id = var.project_id
+
+  depends_on = [
+    module.project_services
+  ]
 }
 
-resource "google_project_iam_member" "workstations_operation_viewer" {
-  count   = length(var.admins)
-  project = module.project.id
-  role    = "roles/workstations.operationViewer"
-  member  = "user:${var.admins[count.index]}"
+module "project_services_cloud_resource_manager" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "18.0.0"
+
+  project_id                  = var.project_id
+  enable_apis                 = var.enable_apis
+  disable_services_on_destroy = false
+  activate_apis = [
+    "cloudresourcemanager.googleapis.com"
+  ]
+}
+
+module "project_services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "18.0.0"
+
+  project_id                  = var.project_id
+  enable_apis                 = var.enable_apis
+  disable_services_on_destroy = false
+  activate_apis = [
+    "compute.googleapis.com",
+    "monitoring.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "serviceusage.googleapis.com",
+  ]
+
+  depends_on = [
+    module.project_services_cloud_resource_manager
+  ]
 }

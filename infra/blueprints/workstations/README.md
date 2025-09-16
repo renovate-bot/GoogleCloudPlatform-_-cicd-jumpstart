@@ -1,5 +1,8 @@
-Download the "Android Studio for Platform" custom image source files from:
-`https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples/tree/main/examples/images/android-open-source-project/android-studio-for-platform`
-and place the code within `cicd-foundation/apps/asfp/` (so that the `Dockerfile` is in this directory).
+To build the "Android Studio for Platform" or other custom images for
+Cloud Workstations, you can leverage the examples in the [cws-images]
+repository and place them in a fork / a (private) repository you own.
 
-You can then follow with the instructions from `cicd-foundation/infra/README.md`.
+You can then follow with the instructions from
+`cicd-foundation/infra/README.md`.
+
+[cws-images]: https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples/tree/main/examples/images/

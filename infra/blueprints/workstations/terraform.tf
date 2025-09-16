@@ -1,4 +1,4 @@
-# Copyright 2024-2025 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# grant Storage Object Admin role to the Google Identity invoking Terraform
 terraform {
-  backend "gcs" {
-    bucket = "YOUR_BUCKET"
-    # folder in the bucket (will be created) to store the .tfstate
-    prefix = "workstation-images"
+  required_version = ">= 1.9.6"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 6.11.0"
+    }
   }
+  # grant Storage Object Admin role to the Google Identity invoking Terraform
+  #backend "gcs" {
+  #  bucket = "YOUR_BUCKET"
+  #  # folder in the bucket (will be created) to store the .tfstate
+  #  prefix = "terraform/workstations"
+  #}
+}
+
+provider "google" {
+  user_project_override = true
+  billing_project       = var.project_id
+  project               = var.project_id
 }
