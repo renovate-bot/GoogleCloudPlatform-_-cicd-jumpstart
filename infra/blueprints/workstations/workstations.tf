@@ -60,6 +60,7 @@ module "cicd_pipelines" {
   github_owner                        = var.github_owner
   github_repo                         = var.github_repo
   secret_manager_region               = local.secret_manager_region
+  secure_source_manager_always_create = var.secure_source_manager_always_create
   secure_source_manager_instance_name = var.secure_source_manager_instance_name
   secure_source_manager_region        = var.secure_source_manager_region
   # go/keep-sorted end

@@ -26,7 +26,7 @@ locals {
     ],
     length(local.cloud_deploy_apps) > 0 ? ["clouddeploy.googleapis.com"] : [],
     length(local.workstation_apps) > 0 ? ["cloudscheduler.googleapis.com"] : [],
-    local.github_source ? [] : ["apikeys.googleapis.com", "securesourcemanager.googleapis.com"]
+    local.source.ssm ? ["apikeys.googleapis.com", "securesourcemanager.googleapis.com"] : []
   )
   artifact_registry_project_id = data.google_project.project.project_id
   artifact_registry_repository_uri = format(
@@ -51,9 +51,12 @@ locals {
     "tf_module_name"        = "cicd_pipelines"
     "tf_module_version"     = "v3-0-0"
   }
-  github_source    = var.github_owner != null && var.github_repo != null
   kms_project_id   = data.google_project.project.project_id
   prefix           = var.namespace == "" ? "" : "${var.namespace}-"
+  source = {
+    github = var.github_owner != null && var.github_repo != null
+    ssm    = var.secure_source_manager_always_create || var.github_owner == null || var.github_repo == null
+  }
   workstation_apps = { for k, v in var.apps : k => v if v.runtime == "workstations" }
   # go/keep-sorted end
 }
@@ -92,10 +95,10 @@ module "project_services" {
   ]
 }
 
-resource "google_apikeys_key" "cloudbuild" {
-  count = local.github_source ? 0 : 1
+resource "google_apikeys_key" "cloud_build" {
+  count = local.source.ssm ? 1 : 0
 
-  name         = "cloudbuild"
+  name         = "cloudbuild-api-key"
   display_name = "API key for Cloud Build"
   project      = data.google_project.project.project_id
   restrictions {

@@ -103,7 +103,7 @@ variable "apps" {
     stages  = optional(map(map(string)))
     workstation_config = optional(object({
       # The region to use for the Cloud Scheduler job.
-      scheduler_region = string
+      scheduler_region = optional(string)
       # The schedule for the Cloud Scheduler job in cron format (e.g., "0 1 * * *")
       ci_schedule = string
     }))
@@ -206,16 +206,22 @@ variable "github_repo" {
   default     = null
 }
 
+variable "secure_source_manager_always_create" {
+  type        = bool
+  description = "If true, create Secure Source Manager resources (instance, repository). These resources can be created even when a GitHub repository is also specified as the trigger source."
+  default     = false
+}
+
+variable "secure_source_manager_deletion_policy" {
+  type        = string
+  description = "The deletion policy for the Secure Source Manager instance and repository. One of DELETE, PREVENT, or ABANDON."
+  default     = "PREVENT"
+}
+
 variable "secure_source_manager_instance_name" {
   type        = string
   description = "The name of the Secure Source Manager instance."
   default     = "cicd-foundation"
-}
-
-variable "secure_source_manager_repo_deletion_policy" {
-  type        = string
-  description = "The deletion policy for the Secure Source Manager repository. One of DELETE, PREVENT, or ABANDON."
-  default     = "PREVENT"
 }
 
 variable "secure_source_manager_repo_name" {

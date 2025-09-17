@@ -107,6 +107,12 @@ variable "github_repo" {
   default     = null
 }
 
+variable "secure_source_manager_always_create" {
+  type        = bool
+  description = "If true, create Secure Source Manager resources (instance, repository). These resources can be created even when a GitHub repository is also specified as the trigger source."
+  default     = false
+}
+
 variable "secure_source_manager_instance_name" {
   type        = string
   description = "The name of the Secure Source Manager instance."
@@ -178,7 +184,7 @@ variable "cws_custom_images" {
       })
     )
     workstation_config = optional(object({
-      scheduler_region = string
+      scheduler_region = optional(string)
       ci_schedule      = string
     }))
   }))

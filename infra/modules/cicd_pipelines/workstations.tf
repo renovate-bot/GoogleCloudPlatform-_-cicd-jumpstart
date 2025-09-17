@@ -30,7 +30,7 @@ module "cws_image_build_runner_service_account" {
   source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v36.0.1"
 
   project_id   = data.google_project.project.project_id
-  name         = "${local.prefix}ws-image-builder"
+  name         = "${local.prefix}cws-image-builder"
   display_name = "Cloud Workstation Image Build Runner Service Account"
   description  = "Terraform-managed."
   iam_sa_roles = {
@@ -56,16 +56,17 @@ resource "google_cloud_scheduler_job" "cws_image_rebuild" {
 
   project     = data.google_project.project.project_id
   region      = coalesce(each.value.workstation_config.scheduler_region, var.scheduler_default_region)
-  name        = "${local.prefix}${each.key}-ws-image-rebuild"
+  name        = "${local.prefix}${each.key}-cws-image-rebuild"
   description = "Terraform-managed."
   schedule    = coalesce(each.value.workstation_config.ci_schedule, var.default_ci_schedule)
   paused      = false
+  # cf. https://cloud.google.com/build/docs/api/reference/rest/v1/projects.triggers/run
   http_target {
     http_method = "POST"
     uri = format("https://cloudbuild.googleapis.com/v1/projects/%s/locations/%s/triggers/%s:run",
       data.google_project.project.project_id,
       var.cloud_build_region,
-      google_cloudbuild_trigger.continuous_integration[each.key].trigger_id
+      google_cloudbuild_trigger.ci_pipeline["${each.key}"].trigger_id
     )
     oauth_token {
       service_account_email = module.cws_image_build_runner_service_account[0].email

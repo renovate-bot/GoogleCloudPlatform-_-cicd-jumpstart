@@ -16,17 +16,17 @@
 
 output "webhook_trigger_secret_id" {
   description = "The ID of the webhook trigger secret."
-  value       = google_secret_manager_secret.webhook_trigger.id
+  value       = local.source.ssm ? google_secret_manager_secret.webhook_trigger[0].id : null
 }
 
 output "webhook_trigger_secret_name" {
   description = "The name of the webhook trigger secret."
-  value       = google_secret_manager_secret.webhook_trigger.name
+  value       = local.source.ssm ? google_secret_manager_secret.webhook_trigger[0].name : null
 }
 
 output "webhook_trigger_secret_key" {
   description = "The random key for the webhook trigger secret."
-  value       = random_id.webhook_secret_key.hex
+  value       = local.source.ssm ? random_id.webhook_secret_key[0].hex : null
   sensitive   = true
 }
 # Source Control (Secure Source Manager)
@@ -34,42 +34,42 @@ output "webhook_trigger_secret_key" {
 # go/keep-sorted start block=yes newline_separated=yes
 output "secure_source_manager_instance_git_http" {
   description = "The Git HTTP URI of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.cicd_foundation.host_config[0].git_http
+  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].host_config[0].git_http : null
 }
 
 output "secure_source_manager_instance_git_ssh" {
   description = "The Git SSH URI of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.cicd_foundation.host_config[0].git_ssh
+  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].host_config[0].git_ssh : null
 }
 
 output "secure_source_manager_instance_html" {
   description = "The HTML hostname of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.cicd_foundation.host_config[0].html
+  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].host_config[0].html : null
 }
 
 output "secure_source_manager_instance_id" {
   description = "The ID of the created Secure Source Manager instance."
-  value       = google_secure_source_manager_instance.cicd_foundation.id
+  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].id : null
 }
 
 output "secure_source_manager_repository_git_html" {
   description = "The Git HTML URI of the created Secure Source Manager repository."
-  value       = google_secure_source_manager_repository.cicd_foundation.uris[0].html
+  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].uris[0].html : null
 }
 
 output "secure_source_manager_repository_git_https" {
   description = "The Git HTTP URI of the created Secure Source Manager repository."
-  value       = google_secure_source_manager_repository.cicd_foundation.uris[0].git_https
+  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].uris[0].git_https : null
 }
 
 output "secure_source_manager_repository_id" {
   description = "The full ID of the created Secure Source Manager repository resource."
-  value       = google_secure_source_manager_repository.cicd_foundation.id
+  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].id : null
 }
 
 output "secure_source_manager_repository_name" {
   description = "The short name (repository_id) of the created Secure Source Manager repository."
-  value       = google_secure_source_manager_repository.cicd_foundation.repository_id
+  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].repository_id : null
 }
 # go/keep-sorted end
 
@@ -78,7 +78,7 @@ output "secure_source_manager_repository_name" {
 # go/keep-sorted start block=yes newline_separated=yes
 output "cloud_build_api_key" {
   description = "The API key for Cloud Build webhook triggers."
-  value       = local.github_source ? null : google_apikeys_key.cloudbuild[0].key_string
+  value       = local.source.ssm ? google_apikeys_key.cloud_build[0].key_string : null
   sensitive   = true
 }
 
@@ -94,7 +94,7 @@ output "cloud_build_service_account_id" {
 
 output "cloud_build_trigger_github_connection_needed" {
   description = "Instructions to connect GitHub repository if using GitHub source."
-  value = local.github_source ? (<<-EOT
+  value = local.source.github ? (<<-EOT
     you first need to connect the GitHub repository to your GCP project:
     https://console.cloud.google.com/cloud-build/triggers;region=${var.cloud_build_region}/connect?project=${local.build_project_id}
     before you can create this trigger
@@ -104,12 +104,12 @@ output "cloud_build_trigger_github_connection_needed" {
 
 output "cloud_build_trigger_id" {
   description = "The full resource ID of the Cloud Build trigger."
-  value       = { for k, v in google_cloudbuild_trigger.continuous_integration : k => v.id }
+  value       = { for k, v in google_cloudbuild_trigger.ci_pipeline : k => v.id }
 }
 
 output "cloud_build_trigger_trigger_id" {
   description = "The unique short ID of the Cloud Build trigger."
-  value       = { for k, v in google_cloudbuild_trigger.continuous_integration : k => v.trigger_id }
+  value       = { for k, v in google_cloudbuild_trigger.ci_pipeline : k => v.trigger_id }
 }
 
 output "cloud_build_worker_pool_ids" {

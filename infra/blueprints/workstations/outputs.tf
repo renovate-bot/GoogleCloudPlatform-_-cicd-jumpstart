@@ -75,13 +75,13 @@ output "webhook_setup_instructions" {
     and follow the instructions from
     https://cloud.google.com/secure-source-manager/docs/set-up-webhooks#set-up-webhook
     to setup a webhook using the following information:
-    ${join("\n", [for image, id in module.cicd_pipelines[0].cloud_build_trigger_id : (
+    ${join("\n", [for image, id in { for k, v in module.cicd_pipelines[0].cloud_build_trigger_id : k => v if ! endswith(k, "-github") } : (
     <<-IMAGE_INFO
       - Hook ID: ${image}
         - Target URL:
           https://cloudbuild.googleapis.com/v1/${id}:webhook
         - Sensitive Query String:
-          key=${module.cicd_pipelines[0].cloud_build_api_key}&secret=${module.cicd_pipelines[0].webhook_trigger_secret_key}&trigger=${module.cicd_pipelines[0].cloud_build_trigger_trigger_id[image]}&projectId=${data.google_project.project.project_id}
+          key=${module.cicd_pipelines[0].cloud_build_api_key}&secret=${module.cicd_pipelines[0].webhook_trigger_secret_key}&trigger=${image}&projectId=${data.google_project.project.project_id}
       IMAGE_INFO
 )])}
 
