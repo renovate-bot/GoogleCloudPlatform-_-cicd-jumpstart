@@ -16,13 +16,6 @@ locals {
   images       = keys(var.cws_custom_images)
   target_names = keys(var.android_targets)
 
-  artifact_registry_repository_uri = format(
-    "%s-docker.pkg.dev/%s/%s",
-    google_artifact_registry_repository.container_registry.location,
-    google_artifact_registry_repository.container_registry.project,
-    google_artifact_registry_repository.container_registry.repository_id
-  )
-
   # Generate all combinations of config, image, branch, and target
   cws_combinations = flatten([
     for config_key, config_value in var.cws_configs : [
@@ -43,36 +36,21 @@ locals {
     "${combo.config_key}-${lower(combo.image)}-${lower(combo.branch)}-${lower(combo.target)}" => merge(
       combo.config_value,
       {
-        image = "${local.artifact_registry_repository_uri}/${lower(combo.image)}:latest"
-        instances = [
-          {
-            # Generate a short, unique name for each workstation instance based on the combination.
-            # This involves splitting the config key, image, branch, and target by '-',
-            # taking the first 4 characters of each part, joining them with '-',
-            # and then truncating the result to a maximum of 12 characters.
-            name = join("-", [
-              lower(substr(join("-", [for part in split("-", combo.config_key) : substr(part, 0, 4)]), 0, 12)),
-              lower(substr(join("-", [for part in split("-", combo.image) : substr(part, 0, 4)]), 0, 12)),
-              lower(substr(join("-", [for part in split("-", combo.branch) : substr(part, 0, 4)]), 0, 12)),
-              lower(substr(join("-", [for part in split("-", combo.target) : substr(part, 0, 4)]), 0, 12)),
-              substr(sha256("${combo.config_key}-${combo.image}-${combo.branch}-${combo.target}"), 0, 4)
-            ])
-
-            display_name = "${combo.config_key}-${combo.image}-${combo.branch}-${combo.target}"
-
-            # The 'users' field is populated by flattening the 'users' lists from each instance
-            # defined within 'combo.config_value.instances'. These users are assumed to be the
-            # creators of the workstation instances. Defaults to an empty list if
-            # 'combo.config_value.instances' is null or empty.
-            users = (
-              combo.config_value.instances == null ?
-              [] :
-              flatten([
-                for instance in combo.config_value.instances : instance.users
-              ])
-            )
-          }
-        ]
+        image = lower(combo.image)
+        instances = [for i in try(combo.config_value.instances, []) : {
+          # The 'name' is constructed to be unique and descriptive within GCP's resource naming limits (63 characters).
+          # It combines elements reflecting the instance name, image, branch, and target from the combination.
+          # A short SHA256 hash of the full display name is appended to ensure uniqueness.
+          name = join("-", [
+            lower(substr(i.name, 0, 20)),
+            lower(substr(join("-", [for part in split("-", combo.image) : substr(part, 0, 4)]), 0, 11)),
+            lower(substr(join("-", [for part in split("-", combo.branch) : substr(part, 0, 4)]), 0, 11)),
+            lower(substr(join("-", [for part in split("-", combo.target) : substr(part, 0, 4)]), 0, 11)),
+            substr(sha256("${i.name}-${combo.image}-${combo.branch}-${combo.target}"), 0, 4)
+          ])
+          display_name = "${i.name}-${combo.image}-${combo.branch}-${combo.target}"
+          users        = i.users
+        }]
       }
     )
   }

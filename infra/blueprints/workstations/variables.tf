@@ -73,13 +73,6 @@ variable "vpc_name" {
 }
 # go/keep-sorted end
 
-# Artifact Registry
-variable "artifact_registry_repository_id" {
-  type        = string
-  description = "The ID of the Artifact Registry repository for container images."
-  default     = "cloud-workstations-images"
-}
-
 # Source Control (GitHub & Secure Source Manager)
 
 # go/keep-sorted start block=yes newline_separated=yes

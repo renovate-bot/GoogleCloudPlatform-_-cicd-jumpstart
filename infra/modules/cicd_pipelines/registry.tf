@@ -37,27 +37,27 @@ data "google_artifact_registry_repository" "container_repository" {
   ]
 }
 
-resource "google_artifact_registry_repository_iam_binding" "reader" {
-  project    = local.artifact_registry_project_id
-  location   = var.artifact_registry_region
-  repository = data.google_artifact_registry_repository.container_repository.id
-  role       = "roles/artifactregistry.reader"
-  members = concat([
+resource "google_artifact_registry_repository_iam_member" "reader" {
+  for_each = toset(concat([
     module.service_account_cloud_build.iam_email
     ],
     length(local.workstation_apps) > 0 ? [
       module.cws_image_build_runner_service_account[0].iam_email
     ] : [],
     var.artifact_registry_readers
-  )
+  ))
+
+  project    = local.artifact_registry_project_id
+  location   = var.artifact_registry_region
+  repository = data.google_artifact_registry_repository.container_repository.id
+  role       = "roles/artifactregistry.reader"
+  member     = each.key
 }
 
-resource "google_artifact_registry_repository_iam_binding" "writer" {
+resource "google_artifact_registry_repository_iam_member" "writer" {
   project    = local.artifact_registry_project_id
   location   = var.artifact_registry_region
   repository = data.google_artifact_registry_repository.container_repository.id
   role       = "roles/artifactregistry.writer"
-  members = [
-    module.service_account_cloud_build.iam_email,
-  ]
+  member     = module.service_account_cloud_build.iam_email
 }
