@@ -12,12 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Fetch an existing custom role for the Cloud Workstations image build runner.
+# This role is not namespaced and is reused.
+data "google_project_iam_custom_role" "cws_image_build_runner_data" {
+  count = length(local.workstation_apps) > 0 && ! var.cws_image_build_runner_role_create ? 1 : 0
+
+  project = data.google_project.project.project_id
+  role_id = var.cws_image_build_runner_role_id
+}
+
+# Create a custom role for the Cloud Workstations image build runner.
+# This role is not namespaced.
 resource "google_project_iam_custom_role" "cws_image_build_runner" {
-  count = length(local.workstation_apps) > 0 ? 1 : 0
+  count = length(local.workstation_apps) > 0 && var.cws_image_build_runner_role_create ? 1 : 0
 
   project     = data.google_project.project.project_id
-  role_id     = "cwsBuildRunner"
-  title       = "Cloud Workstation Image Build Runner"
+  role_id     = var.cws_image_build_runner_role_id
+  title       = var.cws_image_build_runner_role_title
   description = "Terraform managed."
   permissions = [
     "cloudbuild.builds.create",
@@ -44,8 +55,12 @@ resource "google_project_iam_member" "cws_image_build_runner" {
   count = length(local.workstation_apps) > 0 ? 1 : 0
 
   project = data.google_project.project.project_id
-  role    = google_project_iam_custom_role.cws_image_build_runner[0].name
-  member  = module.cws_image_build_runner_service_account[0].iam_email
+  role = (
+    var.cws_image_build_runner_role_create
+    ? google_project_iam_custom_role.cws_image_build_runner[0].name
+    : data.google_project_iam_custom_role.cws_image_build_runner_data[0].name
+  )
+  member = module.cws_image_build_runner_service_account[0].iam_email
 }
 
 # Cloud Scheduler

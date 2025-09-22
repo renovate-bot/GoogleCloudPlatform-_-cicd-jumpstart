@@ -34,42 +34,56 @@ output "webhook_trigger_secret_key" {
 # go/keep-sorted start block=yes newline_separated=yes
 output "secure_source_manager_instance_git_http" {
   description = "The Git HTTP URI of the created Secure Source Manager instance."
-  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].host_config[0].git_http : null
+  value = local.source.ssm && ! local.ssm_instance_is_provided ? (
+    google_secure_source_manager_instance.cicd_foundation[0].host_config[0].git_http
+  ) : null
 }
 
 output "secure_source_manager_instance_git_ssh" {
   description = "The Git SSH URI of the created Secure Source Manager instance."
-  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].host_config[0].git_ssh : null
+  value = local.source.ssm && ! local.ssm_instance_is_provided ? (
+    google_secure_source_manager_instance.cicd_foundation[0].host_config[0].git_ssh
+  ) : null
 }
 
 output "secure_source_manager_instance_html" {
-  description = "The HTML hostname of the created Secure Source Manager instance."
-  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].host_config[0].html : null
+  description = "The HTML hostname of the Secure Source Manager instance."
+  value = local.source.ssm && ! local.ssm_instance_is_provided ? (
+    google_secure_source_manager_instance.cicd_foundation[0].host_config[0].html
+  ) : null
 }
 
 output "secure_source_manager_instance_id" {
-  description = "The ID of the created Secure Source Manager instance."
-  value       = local.source.ssm ? google_secure_source_manager_instance.cicd_foundation[0].id : null
+  description = "The ID of the Secure Source Manager instance."
+  value       = local.ssm_instance_id
 }
 
 output "secure_source_manager_repository_git_html" {
   description = "The Git HTML URI of the created Secure Source Manager repository."
-  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].uris[0].html : null
+  value = local.source.ssm ? (
+    google_secure_source_manager_repository.cicd_foundation[0].uris[0].html
+  ) : null
 }
 
 output "secure_source_manager_repository_git_https" {
   description = "The Git HTTP URI of the created Secure Source Manager repository."
-  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].uris[0].git_https : null
+  value = local.source.ssm ? (
+    google_secure_source_manager_repository.cicd_foundation[0].uris[0].git_https
+  ) : null
 }
 
 output "secure_source_manager_repository_id" {
   description = "The full ID of the created Secure Source Manager repository resource."
-  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].id : null
+  value = local.source.ssm ? (
+    google_secure_source_manager_repository.cicd_foundation[0].id
+  ) : null
 }
 
 output "secure_source_manager_repository_name" {
   description = "The short name (repository_id) of the created Secure Source Manager repository."
-  value       = local.source.ssm ? google_secure_source_manager_repository.cicd_foundation[0].repository_id : null
+  value = local.source.ssm ? (
+    google_secure_source_manager_repository.cicd_foundation[0].repository_id
+  ) : null
 }
 # go/keep-sorted end
 
@@ -146,11 +160,15 @@ output "artifact_registry_repository_uri" {
 # go/keep-sorted start block=yes newline_separated=yes
 output "cws_image_build_runner_service_account_email" {
   description = "The email of the Cloud Workstation Image Build Runner service account."
-  value       = length(local.workstation_apps) > 0 ? module.cws_image_build_runner_service_account[0].email : null
+  value = length(local.workstation_apps) > 0 ? (
+    module.cws_image_build_runner_service_account[0].email
+  ) : null
 }
 
 output "cws_image_build_runner_service_account_id" {
   description = "The ID of the Cloud Workstation Image Build Runner service account."
-  value       = length(local.workstation_apps) > 0 ? module.cws_image_build_runner_service_account[0].id : null
+  value = length(local.workstation_apps) > 0 ? (
+    module.cws_image_build_runner_service_account[0].id
+  ) : null
 }
 # go/keep-sorted end

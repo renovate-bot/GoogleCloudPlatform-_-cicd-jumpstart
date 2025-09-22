@@ -24,7 +24,7 @@ locals {
       config       = var.apps[app_source[0]]
       trigger_type = app_source[1]
     }
-    if (app_source[1] == "webhook" && local.source.ssm) || (app_source[1] == "github" && local.source.github) || (app_source[1] == "manual" && local.source.github)
+    if(app_source[1] == "webhook" && local.source.ssm) || (app_source[1] == "github" && local.source.github) || (app_source[1] == "manual" && local.source.github)
   }
 
   # Boolean flags for each application source combination.
@@ -270,8 +270,8 @@ module "service_account_cloud_build" {
 resource "google_cloudbuild_worker_pool" "pool" {
   for_each = { for k, v in var.stages : k => v if v.peered_network != null }
 
-  name     = "${local.prefix}${var.cloud_build_pool_name}-${each.key}"
   project  = var.stages[each.key].project_id
+  name     = "${local.prefix}${var.cloud_build_pool_name}-${each.key}"
   location = var.cloud_build_region
   worker_config {
     disk_size_gb   = var.cloud_build_pool_disk_size_gb
@@ -286,8 +286,8 @@ resource "google_cloudbuild_worker_pool" "pool" {
 resource "google_cloudbuild_trigger" "ci_pipeline" {
   for_each = local.ci_build_specs
 
-  name            = "${local.prefix}${each.value.name}${each.value.postfix}"
   project         = local.build_project_id
+  name            = "${local.prefix}${each.value.name}${each.value.postfix}"
   location        = var.cloud_build_region
   service_account = module.service_account_cloud_build.id
   description     = "Terraform-managed."

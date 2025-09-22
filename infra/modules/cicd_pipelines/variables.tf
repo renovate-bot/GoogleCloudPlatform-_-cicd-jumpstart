@@ -218,6 +218,12 @@ variable "secure_source_manager_deletion_policy" {
   default     = "PREVENT"
 }
 
+variable "secure_source_manager_instance_id" {
+  type        = string
+  description = "The full ID of an existing Secure Source Manager instance. If null, a new one will be created."
+  default     = null
+}
+
 variable "secure_source_manager_instance_name" {
   type        = string
   description = "The name of the Secure Source Manager instance."
@@ -227,7 +233,7 @@ variable "secure_source_manager_instance_name" {
 variable "secure_source_manager_repo_name" {
   type        = string
   description = "The name of the Secure Source Manager repository."
-  default     = "repository"
+  default     = "cicd-foundation"
 }
 # go/keep-sorted end
 
@@ -252,6 +258,22 @@ variable "build_timeout_default_seconds" {
   type        = number
   description = "The default timeout in seconds for Cloud Build jobs."
   default     = 7200
+}
+
+variable "cloud_build_api_key_display_name" {
+  type        = string
+  description = "The display name of the API key for Cloud Build."
+  default     = "API key for Cloud Build"
+}
+
+variable "cloud_build_api_key_name" {
+  type        = string
+  description = <<-EOT
+    The name of the API key for Cloud Build.
+    You can import an existing API key by specifying its name here
+    and running `terraform import`.
+  EOT
+  default     = "cloudbuild"
 }
 
 variable "cloud_build_pool_disk_size_gb" {
@@ -384,7 +406,7 @@ variable "artifact_registry_id" {
 variable "artifact_registry_name" {
   type        = string
   description = "The name of the Artifact Registry repository to create if artifact_registry_id is null."
-  default     = "container-registry"
+  default     = "cicd-foundation"
 }
 
 variable "artifact_registry_readers" {
@@ -413,5 +435,27 @@ variable "service_account_cloud_deploy_name" {
   type        = string
   description = "The base name for the Cloud Deploy service accounts. Stage name will be appended."
   default     = "cloud-deploy"
+}
+# go/keep-sorted end
+
+# Cloud Workstations
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "cws_image_build_runner_role_create" {
+  type        = bool
+  description = "Whether to create the custom IAM role for the Cloud Workstation Image Build Runner. If false, the role is expected to exist."
+  default     = true
+}
+
+variable "cws_image_build_runner_role_id" {
+  type        = string
+  description = "The role_id for the custom IAM role for the Cloud Workstation Image Build Runner."
+  default     = "cwsBuildRunner"
+}
+
+variable "cws_image_build_runner_role_title" {
+  type        = string
+  description = "The title for the custom IAM role for the Cloud Workstation Image Build Runner."
+  default     = "Cloud Workstation Image Build Runner"
 }
 # go/keep-sorted end

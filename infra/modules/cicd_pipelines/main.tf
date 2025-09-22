@@ -51,8 +51,8 @@ locals {
     "tf_module_name"        = "cicd_pipelines"
     "tf_module_version"     = "v3-0-0"
   }
-  kms_project_id   = data.google_project.project.project_id
-  prefix           = var.namespace == "" ? "" : "${var.namespace}-"
+  kms_project_id = data.google_project.project.project_id
+  prefix         = var.namespace == "" ? "" : "${var.namespace}-"
   source = {
     github = var.github_owner != null && var.github_repo != null
     ssm    = var.secure_source_manager_always_create || var.github_owner == null || var.github_repo == null
@@ -98,9 +98,9 @@ module "project_services" {
 resource "google_apikeys_key" "cloud_build" {
   count = local.source.ssm ? 1 : 0
 
-  name         = "cloudbuild-api-key"
-  display_name = "API key for Cloud Build"
   project      = data.google_project.project.project_id
+  name         = var.cloud_build_api_key_name
+  display_name = var.cloud_build_api_key_display_name
   restrictions {
     api_targets {
       service = "cloudbuild.googleapis.com"
