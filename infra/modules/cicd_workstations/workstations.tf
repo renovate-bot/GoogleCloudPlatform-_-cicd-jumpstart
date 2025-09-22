@@ -23,7 +23,7 @@ locals {
         for instance in config_value.instances : {
           resource_key = "${config_key}-${instance.name}"
           ws_name      = instance.name
-          display_name = coalesce(instance.display_name, config_value.display_name)
+          display_name = coalesce(config_value.display_name, instance.name)
           config_key   = config_key
           users        = instance.users
         }
@@ -127,7 +127,7 @@ resource "google_workstations_workstation_config_iam_policy" "creators" {
   workstation_config_id  = google_workstations_workstation_config.config[each.key].workstation_config_id
   policy_data            = data.google_iam_policy.creators[each.key].policy_data
 
-  depends_on  = [google_workstations_workstation_config.config]
+  depends_on = [google_workstations_workstation_config.config]
 }
 
 # Cloud Workstation instances

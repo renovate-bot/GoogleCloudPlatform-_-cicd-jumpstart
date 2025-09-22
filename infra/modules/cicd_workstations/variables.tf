@@ -54,18 +54,18 @@ variable "cws_clusters" {
 variable "cws_configs" {
   type = map(object({
     # go/keep-sorted start
-    boot_disk_size_gb               = number
-    creators                        = optional(list(string))
-    cws_cluster                     = string
-    disable_public_ip_addresses     = bool
-    display_name                    = optional(string)
-    enable_nested_virtualization    = bool
-    idle_timeout_seconds            = number
-    image                           = optional(string)
+    boot_disk_size_gb            = number
+    creators                     = optional(list(string))
+    cws_cluster                  = string
+    disable_public_ip_addresses  = bool
+    display_name                 = optional(string)
+    enable_nested_virtualization = bool
+    idle_timeout_seconds         = number
+    image                        = optional(string)
     instances = optional(list(object({
-      name  = string
+      name         = string
       display_name = optional(string)
-      users = list(string)
+      users        = list(string)
     })))
     machine_type                    = string
     persistent_disk_fs_type         = optional(string)
