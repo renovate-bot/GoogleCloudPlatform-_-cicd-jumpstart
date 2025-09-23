@@ -14,13 +14,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-MODULES_DIR="$(dirname $(dirname $0))/infra/modules"
+usage() {
+  echo "Usage: $(basename "$0") [--help] [--path-to-modules <path>]"
+  echo "  --help: Show this help message."
+  echo "  --path-to-modules: Specify the path to the directory containing Terraform modules."
+  echo "                     Defaults to $(dirname "$(cd "$(dirname "$0")" && pwd)")/infra/modules"
+}
 
-for MODULE in $(ls -d $MODULES_DIR/*)
+MODULES_DIR="$(dirname "$(cd "$(dirname "$0")" && pwd)")/infra/modules"
+
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --help)
+      usage
+      exit 0
+      ;;
+    --path-to-modules)
+      if [[ -n "$2" ]]; then
+        MODULES_DIR="$2"
+        shift
+      else
+        echo "Error: --path-to-modules requires an argument." >&2
+        usage
+        exit 1
+      fi
+      ;;
+    *)
+      echo "Error: Unknown option '$1'." >&2
+      usage
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+OUTPUT_TEMPLATE=$(cat <<'EOF'
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+{{ .Content }}
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+EOF
+)
+
+for MODULE in $(find "$MODULES_DIR" -maxdepth 1 -type d -o -type l -print | grep -v "$MODULES_DIR$")
 do
   cd $MODULE \
   && \
-  terraform-docs . > README.md \
+  terraform-docs markdown \
+      --output-template "${OUTPUT_TEMPLATE}" \
+      --show inputs \
+      --show outputs \
+      --output-file=README.md \
+      . \
   && \
   cd - > /dev/null
 done
