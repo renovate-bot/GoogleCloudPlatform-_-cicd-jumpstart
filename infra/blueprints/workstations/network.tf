@@ -22,7 +22,7 @@ module "vpc" {
     {
       ip_cidr_range = var.subnet_cidr
       name          = var.subnet_name
-      region        = var.region
+      region        = var.vpc_region
     },
   ]
   psa_configs = [{

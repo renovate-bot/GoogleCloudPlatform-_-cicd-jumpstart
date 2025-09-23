@@ -1,4 +1,4 @@
-# Copyright 2023-2025 Google LLC
+# Copyright 2024-2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,76 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-locals {
-  cloud_build_region    = var.region
-  secret_manager_region = var.region
-  # Configuration for custom images used in Cloud Workstations.
-  # The 'runtime' is set to "workstations" to indicate these are for Cloud Workstations.
-  # Other fields like build and workstation_config are extracted from the input variable.
-  cws_apps = {
-    for k, v in var.cws_custom_images : k => {
-      runtime = "workstations"
-      build = {
-        dockerfile_path = try(v.build.dockerfile_path, null)
-        timeout_seconds = try(v.build.timeout_seconds, null)
-        machine_type    = try(v.build.machine_type, null)
-      }
-      workstation_config = {
-        scheduler_region = try(v.workstation_config.scheduler_region, null)
-        ci_schedule      = try(v.workstation_config.ci_schedule, null)
-      }
-    }
-  }
-  cws_configs_hydrated = {
-    for k, v in local.cws_configs_product : k => merge(v, {
-      # The 'image' field points to the container in Artifact Registry tagged with 'latest'.
-      image     = "${module.cicd_pipelines[0].artifact_registry_repository_uri}/${v.image}:latest"
-      instances = v.instances
-    })
-  }
-}
-
-module "cicd_pipelines" {
-  count = length(var.cws_custom_images) > 0 ? 1 : 0
-
-  source = "github.com/GoogleCloudPlatform/cicd-foundation//infra/modules/cicd_pipelines?ref=v3.0.0"
+module "cicd_foundation" {
+  source = "github.com/GoogleCloudPlatform/cicd-foundation//infra/modules/cicd_foundation?ref=v3.0.0"
 
   project_id  = data.google_project.project.project_id
   enable_apis = var.enable_apis
   # go/keep-sorted start
-  apps                                = local.cws_apps
-  artifact_registry_region            = var.region
-  cloud_build_region                  = local.cloud_build_region
-  git_branch_trigger                  = var.git_branch_trigger
-  git_branches_regexp_trigger         = var.git_branches_regexp_trigger
-  github_owner                        = var.github_owner
-  github_repo                         = var.github_repo
-  secret_manager_region               = local.secret_manager_region
-  secure_source_manager_always_create = var.secure_source_manager_always_create
-  secure_source_manager_instance_name = var.secure_source_manager_instance_name
-  secure_source_manager_region        = var.secure_source_manager_region
+  artifact_registry_region              = var.artifact_registry_region
+  cloud_build_region                    = var.cloud_build_region
+  cws_clusters                          = var.cws_clusters
+  cws_configs                           = local.cws_configs_product
+  cws_custom_images                     = var.cws_custom_images
+  git_branch_trigger                    = var.git_branch_trigger
+  git_branches_regexp_trigger           = var.git_branches_regexp_trigger
+  github_owner                          = var.github_owner
+  github_repo                           = var.github_repo
+  secret_manager_region                 = var.secret_manager_region
+  secure_source_manager_always_create   = var.secure_source_manager_always_create
+  secure_source_manager_deletion_policy = var.secure_source_manager_deletion_policy
+  secure_source_manager_instance_id     = var.secure_source_manager_instance_id
+  secure_source_manager_instance_name   = var.secure_source_manager_instance_name
+  secure_source_manager_region          = var.secure_source_manager_region
+  secure_source_manager_repo_name       = var.secure_source_manager_repo_name
   # go/keep-sorted end
-}
-
-module "workstations" {
-  source = "github.com/GoogleCloudPlatform/cicd-foundation//infra/modules/cicd_workstations?ref=v3.0.0"
-
-  project_id   = data.google_project.project.project_id
-  enable_apis  = var.enable_apis
-  cws_clusters = var.cws_clusters
-  cws_configs  = local.cws_configs_hydrated
-}
-
-resource "google_artifact_registry_repository_iam_member" "workstation_artifactregistry_reader" {
-  count = length(var.cws_custom_images) > 0 ? 1 : 0
-
-  project    = module.cicd_pipelines[0].artifact_registry_repository.project
-  location   = module.cicd_pipelines[0].artifact_registry_repository.location
-  repository = module.cicd_pipelines[0].artifact_registry_repository.name
-  role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${module.workstations.cws_service_account_email}"
-
-  depends_on = [
-    module.cicd_pipelines
-  ]
 }

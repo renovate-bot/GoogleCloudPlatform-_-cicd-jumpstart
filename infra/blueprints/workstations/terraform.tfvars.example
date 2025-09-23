@@ -17,8 +17,8 @@
 # Required: The Google Cloud Project ID to deploy the resources into.
 project_id = "REPLACE_WITH_YOUR_PROJECT_ID"
 
-# Optional: The default region for resources. Defaults to "us-central1".
-# region = "europe-west1"
+# Optional: The default region for compute resources. Defaults to "us-central1".
+# vpc_region = "europe-west1"
 
 # Optional: The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations.
 # secure_source_manager_region = "europe-west4"
@@ -48,7 +48,7 @@ project_id = "REPLACE_WITH_YOUR_PROJECT_ID"
 
 # Cloud Workstations Clusters
 cws_clusters = {
-  "android-cluster" = {
+  "android" = {
     network    = "default"
     region     = "us-central1"
     subnetwork = "default"
@@ -57,8 +57,8 @@ cws_clusters = {
 
 # Cloud Workstations Configs
 cws_configs = {
-  "default-config" = {
-    cws_cluster = "android-cluster"
+  "default" = {
+    cws_cluster = "android"
     # idle_timeout_seconds           = 7200
     # machine_type                   = "e2-standard-4"
     # boot_disk_size_gb              = 50
@@ -71,23 +71,29 @@ cws_configs = {
     persistent_disk_reclaim_policy = "DELETE"
     # persistent_disk_source_snapshot = null
     # image                          = "us-central1-docker.pkg.dev/cloud-workstations-images/predefined/code-oss:latest"
+    custom_image_names             = [
+      "android-studio",
+      "android-studio-for-platform",
+      "code-oss",
+      "repo-builder"
+    ]
     creators = [
-      "user1@example.com",
-      "user2@example.com",
+    #   "user1@example.com",
+    #   "user2@example.com",
     ]
     instances = [
       {
         name  = "user1-ws"
-        users = ["user1@example.com"]
+        # users = ["user1@example.com"]
       },
       {
         name  = "shared-ws"
-        users = ["user1@example.com", "user2@example.com"]
+        # users = ["user1@example.com", "user2@example.com"]
       }
     ]
   },
-  "snapshot-config" = {
-    cws_cluster = "main-cluster"
+  "snapshot" = {
+    cws_cluster = "android"
     # idle_timeout_seconds           = 7200
     # machine_type                   = "n1-standard-4"
     # boot_disk_size_gb              = 100
@@ -99,11 +105,17 @@ cws_configs = {
     persistent_disk_type           = "pd-ssd"
     persistent_disk_reclaim_policy = "RETAIN"
     persistent_disk_source_snapshot = "projects/my-project/global/snapshots/my-snapshot"
-    # image                          = null # Uses default image
-    creators = [
-      "admin@example.com",
+    # image                          = null
+    custom_image_names             = [
+      "android-studio",
+      "android-studio-for-platform",
+      "code-oss",
+      "repo-builder"
     ]
-    # instances = [] # No pre-defined instances
+    creators = [
+    #   "admin@example.com",
+    ]
+    # instances = []
   }
 }
 

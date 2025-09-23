@@ -13,93 +13,24 @@
 # limitations under the License.
 
 # go/keep-sorted start block=yes newline_separated=yes
-output "cloud_build_trigger_github_connection_needed" {
-  description = "Instructions to connect GitHub repository if using GitHub source."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].cloud_build_trigger_github_connection_needed : null
-}
-
-output "cloud_build_trigger_ids" {
-  description = "The full resource IDs of the Cloud Build triggers."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].cloud_build_trigger_id : {}
-}
-
-output "cloud_build_trigger_trigger_ids" {
-  description = "The unique short IDs of the Cloud Build triggers."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].cloud_build_trigger_trigger_id : {}
-}
-
-output "secure_source_manager_instance_git_http" {
-  description = "The Git HTTP URI of the created Secure Source Manager instance."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].secure_source_manager_instance_git_http : null
-}
-
-output "secure_source_manager_instance_git_ssh" {
-  description = "The Git SSH URI of the created Secure Source Manager instance."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].secure_source_manager_instance_git_ssh : null
-}
-
-output "secure_source_manager_instance_html" {
-  description = "The HTML hostname of the created Secure Source Manager instance."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].secure_source_manager_instance_html : null
-}
-
 output "secure_source_manager_repository_git_html" {
   description = "The Git HTML URI of the created Secure Source Manager repository."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].secure_source_manager_repository_git_html : null
+  value       = length(var.cws_custom_images) > 0 ? module.cicd_foundation.secure_source_manager_repository_git_html : null
 }
 
 output "secure_source_manager_repository_git_https" {
   description = "The Git HTTP URI of the created Secure Source Manager repository."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_pipelines[0].secure_source_manager_repository_git_https : null
+  value       = length(var.cws_custom_images) > 0 ? module.cicd_foundation.secure_source_manager_repository_git_https : null
 }
 
 output "webhook_setup_instructions" {
   description = "Instructions to set up the webhook trigger."
-  value = length(var.cws_custom_images) > 0 && var.github_owner == null ? (
-    <<-EOT
-
-    Have you configured the Google Auth Platform?
-    Visit
-    https://console.cloud.google.com/auth/overview/create?project=${data.google_project.project.project_id}
-    - App name: cicd-foundation
-    - User support email: your-support-email@example.com
-    - Audience: internal
-    - Contact Information: your-contact-email@example.com
-    - Agree to the User Data Policy
-
-    To avoid issues with Application Default Credentials, set the quota project by running:
-    gcloud auth application-default set-quota-project ${data.google_project.project.project_id}
-
-    For each custom image open
-    https://${module.cicd_pipelines[0].secure_source_manager_instance_html}/${data.google_project.project.project_id}/${module.cicd_pipelines[0].secure_source_manager_repository_name}/settings/hooks/gitea/new
-    and follow the instructions from
-    https://cloud.google.com/secure-source-manager/docs/set-up-webhooks#set-up-webhook
-    to setup a webhook using the following information:
-    ${join("\n", [for image, id in { for k, v in module.cicd_pipelines[0].cloud_build_trigger_id : k => v if ! endswith(k, "-github") } : (
-    <<-IMAGE_INFO
-      - Hook ID: ${image}
-        - Target URL:
-          https://cloudbuild.googleapis.com/v1/${id}:webhook
-        - Sensitive Query String:
-          key=${module.cicd_pipelines[0].cloud_build_api_key}&secret=${module.cicd_pipelines[0].webhook_trigger_secret_key}&trigger=${image}&projectId=${data.google_project.project.project_id}
-      IMAGE_INFO
-)])}
-
-    Optional: *Git Refs filter for Push Events*: restrict the glob expression for the git refs filter, e.g., to `main`
-    EOT
-) : null
-  sensitive = true
+  value       = length(var.cws_custom_images) > 0 ? module.cicd_foundation.webhook_setup_instructions : null
+  sensitive   = true
 }
 
 output "webhook_setup_instructions_display" {
   description = "Instructions to set up the webhook trigger."
-  value = length(var.cws_custom_images) > 0 && var.github_owner == null ? (
-    <<-EOT
-
-    To output the instructions (with sensitive information) to set up the
-    webhook trigger, run:
-    terraform output webhook_setup_instructions
-    EOT
-) : null
+  value       = length(var.cws_custom_images) > 0 ? module.cicd_foundation.webhook_setup_instructions_display : null
 }
 # go/keep-sorted end

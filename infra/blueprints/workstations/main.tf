@@ -13,47 +13,45 @@
 # limitations under the License.
 
 locals {
-  images       = keys(var.cws_custom_images)
-  target_names = keys(var.android_targets)
+  target_names       = keys(var.android_targets)
+  has_android_builds = length(var.android_branches) > 0 && length(local.target_names) > 0
 
-  # Generate all combinations of config, image, branch, and target
+  # Generate all combinations of config, branch, and target
   cws_combinations = flatten([
     for config_key, config_value in var.cws_configs : [
-      for item in setproduct(local.images, var.android_branches, local.target_names) :
+      for item in setproduct(var.android_branches, local.target_names) :
       {
         config_key   = config_key
         config_value = config_value
-        image        = item[0]
-        branch       = item[1]
-        target       = item[2]
+        branch       = item[0]
+        target       = item[1]
       }
     ]
   ])
 
   # Build the cws_configs_product map from the combinations
-  cws_configs_product = {
+  cws_configs_product = local.has_android_builds ? {
     for combo in local.cws_combinations :
-    "${combo.config_key}-${lower(combo.image)}-${lower(combo.branch)}-${lower(combo.target)}" => merge(
+    "${combo.config_key}-${lower(combo.branch)}-${lower(combo.target)}" => merge(
       combo.config_value,
       {
-        image = lower(combo.image)
-        instances = [for i in try(combo.config_value.instances, []) : {
-          # The 'name' is constructed to be unique and descriptive within GCP's resource naming limits (63 characters).
-          # It combines elements reflecting the instance name, image, branch, and target from the combination.
-          # A short SHA256 hash of the full display name is appended to ensure uniqueness.
+        instances = [for i in coalesce(combo.config_value.instances, []) : {
+          # The 'name' combines elements reflecting the instance name, branch,
+          # and target from the combination.
+          # Note that the final name will be constructed by the cicd_foundation
+          # module and will incorporate the custom image name and a short hash
+          # of the full name to ensure uniqueness.
           name = join("-", [
-            lower(substr(i.name, 0, 20)),
-            lower(substr(join("-", [for part in split("-", combo.image) : substr(part, 0, 4)]), 0, 11)),
-            lower(substr(join("-", [for part in split("-", combo.branch) : substr(part, 0, 4)]), 0, 11)),
-            lower(substr(join("-", [for part in split("-", combo.target) : substr(part, 0, 4)]), 0, 11)),
-            substr(sha256("${i.name}-${combo.image}-${combo.branch}-${combo.target}"), 0, 4)
+            lower(substr(i.name, 0, 12)),
+            lower(substr(join("-", [for part in split("-", combo.branch) : substr(part, 0, 6)]), 0, 7)),
+            lower(substr(join("-", [for part in split("-", combo.target) : substr(part, 0, 6)]), 0, 7)),
           ])
-          display_name = "${i.name}-${combo.image}-${combo.branch}-${combo.target}"
+          display_name = "${i.name}-${combo.branch}-${combo.target}"
           users        = i.users
         }]
       }
     )
-  }
+  } : var.cws_configs
 }
 
 data "google_project" "project" {
