@@ -42,7 +42,7 @@ specific user.
 
 ```terraform
 module "cicd_workstations" {
-  source = "../cicd_workstations"
+  source = "github.com/GoogleCloudPlatform/cicd-foundation//infra/modules/cicd_workstations?ref=v3.0.0"
 
   project_id = "your-gcp-project-id"
 
@@ -56,17 +56,17 @@ module "cicd_workstations" {
 
   cws_configs = {
     "ide-1" = {
-      cws_cluster                  = "us-central1-cluster"
-      image                        = "us-central1-docker.pkg.dev/your-gcp-project-id/cicd-foundation/ide-1:latest"
-      machine_type                 = "e2-standard-4"
-      boot_disk_size_gb            = 50
-      disable_public_ip_addresses  = true
-      enable_nested_virtualization = false
-      idle_timeout_seconds         = 7200
-      pool_size                    = 1
+      cws_cluster                    = "us-central1-cluster"
+      image                          = "us-central1-docker.pkg.dev/your-gcp-project-id/cicd-foundation/ide-1:latest"
+      machine_type                   = "e2-standard-4"
+      boot_disk_size_gb              = 50
+      disable_public_ip_addresses    = true
+      enable_nested_virtualization   = false
+      idle_timeout_seconds           = 7200
+      pool_size                      = 1
       persistent_disk_type           = "pd-standard"
       persistent_disk_size_gb        = 200
-      persistent_disk_reclaim_policy = "DELETE"
+      persistent_disk_reclaim_policy = "RETAIN"
       creators = [
         "group:your-dev-group@example.com",
       ]

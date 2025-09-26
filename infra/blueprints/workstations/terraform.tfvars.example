@@ -41,6 +41,12 @@ project_id = "REPLACE_WITH_YOUR_PROJECT_ID"
 # Optional: The name of the Secure Source Manager instance.
 # secure_source_manager_instance_name = "my-ssm-instance"
 
+# Optional: The name of the Secure Source Manager repository.
+# secure_source_manager_repo_name = "my-ssm-repo"
+
+# Optional: The URL of a Git repository to clone into the new Secure Source Manager repository. If null, cloning is skipped.
+# secure_source_manager_repo_git_url_to_clone = "https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples.git"
+
 # Optional: The Secure Source Manager (SSM) branch that triggers Cloud Build on push.
 # git_branch_trigger = "dev"
 

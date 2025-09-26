@@ -144,6 +144,12 @@ variable "secure_source_manager_instance_name" {
   default     = "cicd-foundation"
 }
 
+variable "secure_source_manager_repo_git_url_to_clone" {
+  type        = string
+  description = "The URL of a Git repository to clone into the new Secure Source Manager repository. If null, cloning is skipped."
+  default     = "https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples.git"
+}
+
 variable "secure_source_manager_repo_name" {
   type        = string
   description = "The name of the Secure Source Manager repository."

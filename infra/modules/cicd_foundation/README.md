@@ -31,29 +31,29 @@ developers with consistent and secure development environments.
 Below is an example that sets up:
 1.  A CI/CD pipeline for a Cloud Run application `my-app-1`.
 2.  A CI/CD pipeline for a custom Cloud Workstation image `ide-1`, with a
-    scheduled rebuild.
+    daily rebuild.
 3.  A Cloud Workstation cluster and configuration using the custom `ide-1`
     image.
 
 ```terraform
 module "cicd_foundation" {
-  source = "../cicd_foundation"
+  source = "github.com/GoogleCloudPlatform/cicd-foundation//infra/modules/cicd_foundation?ref=v3.0.0"
 
   project_id = "your-gcp-project-id"
 
   # Application to be deployed to Cloud Run
   apps = {
-    my-app-1 = {
+    "my-app-1" = {
       runtime = "cloudrun"
       stages = {
-        dev = {}
+        "dev" = {}
       }
     }
   }
 
   # Custom image for Cloud Workstations
   cws_custom_images = {
-    ide-1 = {
+    "ide-1" = {
       workstation_config = {
         ci_schedule      = "0 1 * * *" # Rebuild daily
         scheduler_region = "us-central1"
@@ -73,11 +73,10 @@ module "cicd_foundation" {
   # Cloud Workstation configuration using the custom image
   cws_configs = {
     "ide-1-config" = {
-      cws_cluster                  = "us-central1-cluster"
-      # Image name matches AR path: {region}-docker.pkg.dev/{project}/{ar_repo_name}/{image_name}
-      image                        = "us-central1-docker.pkg.dev/your-gcp-project-id/cicd-foundation/ide-1:latest"
-      persistent_disk_type         = "pd-standard"
-      persistent_disk_reclaim_policy = "DELETE"
+      cws_cluster                    = "us-central1-cluster"
+      custom_image_names             = ["ide-1"]
+      persistent_disk_type           = "pd-standard"
+      persistent_disk_reclaim_policy = "RETAIN"
       creators = [
         "group:your-dev-group@example.com",
       ]

@@ -13,6 +13,10 @@
 # limitations under the License.
 
 locals {
+  instance_accessor_members = toset(concat(
+    [module.service_account_cloud_build.iam_email],
+    length(google_service_account.git_clone_and_push) > 0 ? [google_service_account.git_clone_and_push[0].member] : [],
+  ))
   cloud_build_service_agent = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
 
   ssm_instance_is_provided = var.secure_source_manager_instance_id != null
@@ -27,8 +31,10 @@ locals {
   ) : null
 }
 
+# Secure Source Manager (SSM) Instance
+
 resource "google_secure_source_manager_instance" "cicd_foundation" {
-  count = local.source.ssm && var.secure_source_manager_instance_id == null ? 1 : 0
+  count = local.source.ssm && ! local.ssm_instance_is_provided ? 1 : 0
 
   project         = data.google_project.project.project_id
   location        = var.secure_source_manager_region
@@ -44,14 +50,16 @@ resource "google_secure_source_manager_instance" "cicd_foundation" {
 }
 
 resource "google_secure_source_manager_instance_iam_member" "instance_accessor" {
-  count = local.source.ssm ? 1 : 0
+  for_each = local.source.ssm ? local.instance_accessor_members : toset([])
 
   project     = local.ssm_project
   location    = local.ssm_location
   instance_id = local.ssm_instance_name
   role        = "roles/securesourcemanager.instanceAccessor"
-  member      = module.service_account_cloud_build.iam_email
+  member      = each.value
 }
+
+# Secure Source Manager (SSM) Repository
 
 resource "google_secure_source_manager_repository" "cicd_foundation" {
   count = local.source.ssm ? 1 : 0
@@ -72,6 +80,8 @@ resource "google_secure_source_manager_repository_iam_binding" "repo_reader" {
   role          = "roles/securesourcemanager.repoReader"
   members       = [module.service_account_cloud_build.iam_email]
 }
+
+# Secure Source Manager (SSM) Webhook
 
 resource "google_secret_manager_secret" "webhook_trigger" {
   count = local.source.ssm ? 1 : 0
@@ -115,4 +125,104 @@ resource "google_secret_manager_secret_iam_policy" "policy" {
   project     = google_secret_manager_secret.webhook_trigger[0].project
   secret_id   = google_secret_manager_secret.webhook_trigger[0].secret_id
   policy_data = data.google_iam_policy.secret_accessor.policy_data
+}
+
+# Clone a Git repo and push to Secure Source Manager (SSM) Repository
+
+resource "google_service_account" "git_clone_and_push" {
+  count = local.source.ssm && var.secure_source_manager_repo_git_url_to_clone != null ? 1 : 0
+
+  project      = data.google_project.project.project_id
+  account_id   = "tf-${local.prefix}git-clone"
+  display_name = "SA for git-clone-and-push trigger"
+  description  = "Terraform-managed."
+}
+
+resource "google_project_iam_member" "git_clone_and_push_log_writer" {
+  count = local.source.ssm && var.secure_source_manager_repo_git_url_to_clone != null ? 1 : 0
+
+  project = data.google_project.project.project_id
+  role    = "roles/logging.logWriter"
+  member  = google_service_account.git_clone_and_push[0].member
+}
+
+resource "google_service_account_iam_member" "git_clone_and_push_cb_user" {
+  count = local.source.ssm && var.secure_source_manager_repo_git_url_to_clone != null ? 1 : 0
+
+  service_account_id = google_service_account.git_clone_and_push[0].name
+  role               = "roles/iam.serviceAccountUser"
+  member             = local.cloud_build_service_agent
+}
+
+resource "google_secure_source_manager_repository_iam_binding" "repo_writer_git_clone" {
+  count = local.source.ssm && var.secure_source_manager_repo_git_url_to_clone != null ? 1 : 0
+
+  project       = google_secure_source_manager_repository.cicd_foundation[0].project
+  location      = google_secure_source_manager_repository.cicd_foundation[0].location
+  repository_id = google_secure_source_manager_repository.cicd_foundation[0].repository_id
+  role          = "roles/securesourcemanager.repoWriter"
+  members       = [google_service_account.git_clone_and_push[0].member]
+}
+
+resource "google_cloudbuild_trigger" "git_clone_and_push" {
+  count = local.source.ssm && var.secure_source_manager_repo_git_url_to_clone != null ? 1 : 0
+
+  project         = data.google_project.project.project_id
+  name            = "tf-git-clone-and-push"
+  location        = var.cloud_build_region
+  service_account = google_service_account.git_clone_and_push[0].id
+  description     = "Terraform managed."
+  webhook_config {
+    secret = google_secret_manager_secret_version.webhook_trigger[0].id
+  }
+  build {
+    step {
+      name       = "gcr.io/cloud-builders/git"
+      id         = "git-clone-and-push"
+      entrypoint = "sh"
+      args = [
+        "-c",
+        <<EOT
+          git config --global user.name "$${_USER_NAME}" && \
+          git config --global user.email "$${_USER_EMAIL}" && \
+          git config --global credential.'https://*.*.sourcemanager.dev'.helper gcloud.sh && \
+          git clone $${_SOURCE_REPO_URL} . && \
+          git remote add private $${_TARGET_REPO_URL} && \
+          git push private $${_BRANCH_NAME}
+        EOT
+      ]
+    }
+    substitutions = {
+      _BRANCH_NAME     = var.git_branch_trigger
+      _SOURCE_REPO_URL = var.secure_source_manager_repo_git_url_to_clone
+      _TARGET_REPO_URL = google_secure_source_manager_repository.cicd_foundation[0].uris[0].git_https
+      _USER_EMAIL      = google_service_account.git_clone_and_push[0].email
+      _USER_NAME       = "github.com/${local.default_labels["tf_module_github_org"]}/${local.default_labels["tf_module_github_repo"]}"
+    }
+    options {
+      logging = "CLOUD_LOGGING_ONLY"
+    }
+  }
+}
+
+resource "null_resource" "run_git_clone_and_push" {
+  count = length(google_cloudbuild_trigger.git_clone_and_push) > 0 ? 1 : 0
+
+  triggers = {
+    ssm_repository_id = google_secure_source_manager_repository.cicd_foundation[0].id
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      gcloud builds triggers run \
+        ${google_cloudbuild_trigger.git_clone_and_push[0].name} \
+        --region=${var.cloud_build_region} \
+        --project=${data.google_project.project.project_id}
+    EOT
+  }
+  depends_on = [
+    google_cloudbuild_trigger.git_clone_and_push,
+    google_secure_source_manager_instance_iam_member.instance_accessor,
+    google_secure_source_manager_repository_iam_binding.repo_writer_git_clone,
+  ]
 }

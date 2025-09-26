@@ -55,7 +55,7 @@ Below is a basic usage example deploying a Cloud Run application named
 
 ```terraform
 module "cicd_pipelines" {
-  source = "../cicd_pipelines"
+  source = "github.com/GoogleCloudPlatform/cicd-foundation//infra/modules/cicd_pipelines?ref=v3.0.0"
 
   project_id = "your-gcp-project-id"
   namespace  = "my-app"
@@ -65,10 +65,10 @@ module "cicd_pipelines" {
 
   # General stage configuration
   stages = {
-    dev = {
+    "dev" = {
       cloud_run_region = "us-central1"
     }
-    prod = {
+    "prod" = {
       cloud_run_region = "us-central1"
       require_approval = true # Require manual approval before deploying to prod
     }
@@ -76,11 +76,11 @@ module "cicd_pipelines" {
 
   # Application-specific configuration
   apps = {
-    my-app-1 = {
+    "my-app-1" = {
       runtime = "cloudrun"
       stages = {
-        dev  = {}
-        prod = {}
+        "dev"  = {}
+        "prod" = {}
       }
     }
   }
