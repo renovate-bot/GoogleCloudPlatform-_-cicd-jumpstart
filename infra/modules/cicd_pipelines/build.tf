@@ -104,7 +104,7 @@ locals {
             args = [
               "-c",
               <<-EOT
-                /bin/grep -Po '"tag":"\K[^"]*"' "$${_SKAFFOLD_OUTPUT}" > images.txt
+                /bin/grep -Po '"tag":"\K[^"]*' "$${_SKAFFOLD_OUTPUT}" > images.txt
                 IMAGES=$$(/bin/cat images.txt)
                 for IMAGE in $$IMAGES; do
                   IMAGE_NAME=$$(/bin/echo "$$IMAGE" | /bin/sed 's/\([^:]*\).*/\1/')
