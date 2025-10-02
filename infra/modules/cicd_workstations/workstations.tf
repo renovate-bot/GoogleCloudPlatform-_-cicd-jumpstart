@@ -163,13 +163,13 @@ data "google_iam_policy" "users" {
 
 # Resource to apply the IAM policy to each Cloud Workstation instance.
 resource "google_workstations_workstation_iam_policy" "iam_policies" {
-  for_each = google_workstations_workstation.workstation
+  for_each = local.workstation_map
   provider = google-beta
 
-  project                = each.value.project
-  location               = each.value.location
-  workstation_cluster_id = each.value.workstation_cluster_id
-  workstation_config_id  = each.value.workstation_config_id
-  workstation_id         = each.value.workstation_id
+  project                = google_workstations_workstation.workstation[each.key].project
+  location               = google_workstations_workstation.workstation[each.key].location
+  workstation_cluster_id = google_workstations_workstation.workstation[each.key].workstation_cluster_id
+  workstation_config_id  = google_workstations_workstation.workstation[each.key].workstation_config_id
+  workstation_id         = google_workstations_workstation.workstation[each.key].workstation_id
   policy_data            = data.google_iam_policy.users[each.key].policy_data
 }
