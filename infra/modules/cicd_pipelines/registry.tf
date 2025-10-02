@@ -15,7 +15,7 @@
 module "docker_artifact_registry" {
   count = var.artifact_registry_id == null ? 1 : 0
 
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/artifact-registry?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/artifact-registry?ref=v45.0.0"
 
   name       = "${local.prefix}${var.artifact_registry_name}"
   project_id = local.artifact_registry_project_id

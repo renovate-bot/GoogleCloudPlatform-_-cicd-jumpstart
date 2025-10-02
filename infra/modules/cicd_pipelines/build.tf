@@ -248,7 +248,7 @@ locals {
 
 # cf. https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts
 module "service_account_cloud_build" {
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v45.0.0"
 
   project_id   = local.build_project_id
   name         = "${local.prefix}${var.cloud_build_service_account_name}"

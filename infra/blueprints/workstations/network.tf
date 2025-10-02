@@ -13,7 +13,7 @@
 # limitations under the License.
 
 module "vpc" {
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc?ref=v45.0.0"
 
   project_id = var.project_id
   name       = var.vpc_name
@@ -33,7 +33,7 @@ module "vpc" {
 }
 
 module "fw" {
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc-firewall?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc-firewall?ref=v45.0.0"
 
   project_id = var.project_id
   network    = module.vpc.name

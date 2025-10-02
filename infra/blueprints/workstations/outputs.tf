@@ -22,15 +22,4 @@ output "secure_source_manager_repository_git_https" {
   description = "The Git HTTP URI of the created Secure Source Manager repository."
   value       = length(var.cws_custom_images) > 0 ? module.cicd_foundation.secure_source_manager_repository_git_https : null
 }
-
-output "webhook_setup_instructions" {
-  description = "Instructions to set up the webhook trigger."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_foundation.webhook_setup_instructions : null
-  sensitive   = true
-}
-
-output "webhook_setup_instructions_display" {
-  description = "Instructions to set up the webhook trigger."
-  value       = length(var.cws_custom_images) > 0 ? module.cicd_foundation.webhook_setup_instructions_display : null
-}
 # go/keep-sorted end

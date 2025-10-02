@@ -82,43 +82,6 @@ module "cicd_workstations" {
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.6 |
-| <a name="requirement_google"></a> [google](#requirement\_google) | >= 6.11.0 |
-| <a name="requirement_google-beta"></a> [google-beta](#requirement\_google-beta) | >= 6.11.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | >= 6.11.0 |
-| <a name="provider_google-beta"></a> [google-beta](#provider\_google-beta) | >= 6.11.0 |
-
-## Modules
-
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_cws_service_account"></a> [cws\_service\_account](#module\_cws\_service\_account) | github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account | v40.1.0 |
-| <a name="module_project_services"></a> [project\_services](#module\_project\_services) | terraform-google-modules/project-factory/google//modules/project_services | 18.0.0 |
-| <a name="module_project_services_cloud_resourcemanager"></a> [project\_services\_cloud\_resourcemanager](#module\_project\_services\_cloud\_resourcemanager) | terraform-google-modules/project-factory/google//modules/project_services | 18.0.0 |
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [google-beta_google_workstations_workstation.workstation](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_workstations_workstation) | resource |
-| [google-beta_google_workstations_workstation_cluster.cluster](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_workstations_workstation_cluster) | resource |
-| [google-beta_google_workstations_workstation_config.config](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_workstations_workstation_config) | resource |
-| [google-beta_google_workstations_workstation_config_iam_policy.creators](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_workstations_workstation_config_iam_policy) | resource |
-| [google-beta_google_workstations_workstation_iam_policy.iam_policies](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_workstations_workstation_iam_policy) | resource |
-| [google_project_iam_member.workstations_operation_viewer](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
-| [google_iam_policy.creators](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_policy) | data source |
-| [google_iam_policy.users](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_policy) | data source |
-| [google_project.project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project) | data source |
-
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -139,4 +102,5 @@ module "cicd_workstations" {
 | <a name="output_cws_configs"></a> [cws\_configs](#output\_cws\_configs) | A map of Cloud Workstation configurations, with their IDs and other attributes. |
 | <a name="output_cws_instances"></a> [cws\_instances](#output\_cws\_instances) | A map of Cloud Workstation instances, with their IDs and other attributes. |
 | <a name="output_cws_service_account_email"></a> [cws\_service\_account\_email](#output\_cws\_service\_account\_email) | The email address of the Cloud Workstations Service Account. |
+
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -13,22 +13,23 @@
 # limitations under the License.
 
 locals {
-  instance_accessor_members = toset(concat(
+  # go/keep-sorted start
+  cloudbuild_service_agent = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+  cloudbuild_webhook_uri_template = "https://cloudbuild.googleapis.com/v1/projects/%s/locations/%s/triggers/%s:webhook"
+  ssm_instance_accessor_members = toset(concat(
     [module.service_account_cloud_build.iam_email],
     length(google_service_account.git_clone_and_push) > 0 ? [google_service_account.git_clone_and_push[0].member] : [],
   ))
-  cloud_build_service_agent = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
-
-  ssm_instance_is_provided = var.secure_source_manager_instance_id != null
-
-  ssm_project       = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[1] : data.google_project.project.project_id
-  ssm_location      = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[3] : var.secure_source_manager_region
-  ssm_instance_name = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[5] : var.secure_source_manager_instance_name
   ssm_instance_id = local.source.ssm ? (
     local.ssm_instance_is_provided ?
     var.secure_source_manager_instance_id :
     google_secure_source_manager_instance.cicd_foundation[0].id
   ) : null
+  ssm_instance_is_provided = var.secure_source_manager_instance_id != null
+  ssm_instance_name = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[5] : var.secure_source_manager_instance_name
+  ssm_location      = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[3] : var.secure_source_manager_region
+  ssm_project       = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[1] : data.google_project.project.project_id
+  # go/keep-sorted end
 }
 
 # Secure Source Manager (SSM) Instance
@@ -50,7 +51,7 @@ resource "google_secure_source_manager_instance" "cicd_foundation" {
 }
 
 resource "google_secure_source_manager_instance_iam_member" "instance_accessor" {
-  for_each = local.source.ssm ? local.instance_accessor_members : toset([])
+  for_each = local.source.ssm ? local.ssm_instance_accessor_members : toset([])
 
   project     = local.ssm_project
   location    = local.ssm_location
@@ -127,6 +128,31 @@ resource "google_secret_manager_secret_iam_policy" "policy" {
   policy_data = data.google_iam_policy.secret_accessor.policy_data
 }
 
+resource "google_secure_source_manager_hook" "cicd_foundation" {
+  for_each = { for k, v in google_cloudbuild_trigger.ci_pipeline : k => v if local.source.ssm && local.ci_apps_flags[k].is_webhook_trigger }
+
+  project                = google_secure_source_manager_repository.cicd_foundation[0].project
+  hook_id                = each.value.name
+  repository_id          = google_secure_source_manager_repository.cicd_foundation[0].repository_id
+  location               = google_secure_source_manager_repository.cicd_foundation[0].location
+  target_uri             = format(
+    local.cloudbuild_webhook_uri_template,
+    each.value.project,
+    each.value.location,
+    each.value.name
+  )
+  sensitive_query_string = join("&", [
+    "key=${google_apikeys_key.cloud_build[0].key_string}",
+    "secret=${google_secret_manager_secret_version.webhook_trigger[0].secret_data}",
+    "trigger=${each.value.name}",
+    "projectId=${google_secure_source_manager_repository.cicd_foundation[0].project}"
+  ])
+  push_option {
+    branch_filter = var.git_branch_trigger
+  }
+  events = ["PUSH"]
+}
+
 # Clone a Git repo and push to Secure Source Manager (SSM) Repository
 
 resource "google_service_account" "git_clone_and_push" {
@@ -151,7 +177,7 @@ resource "google_service_account_iam_member" "git_clone_and_push_cb_user" {
 
   service_account_id = google_service_account.git_clone_and_push[0].name
   role               = "roles/iam.serviceAccountUser"
-  member             = local.cloud_build_service_agent
+  member             = local.cloudbuild_service_agent
 }
 
 resource "google_secure_source_manager_repository_iam_binding" "repo_writer_git_clone" {

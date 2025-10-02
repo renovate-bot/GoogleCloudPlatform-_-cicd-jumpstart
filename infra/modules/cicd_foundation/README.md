@@ -86,36 +86,6 @@ module "cicd_foundation" {
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.6 |
-| <a name="requirement_google"></a> [google](#requirement\_google) | >= 6.11.0 |
-| <a name="requirement_google-beta"></a> [google-beta](#requirement\_google-beta) | >= 6.11.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | >= 6.11.0 |
-
-## Modules
-
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_cicd_pipelines"></a> [cicd\_pipelines](#module\_cicd\_pipelines) | ./cicd_pipelines | n/a |
-| <a name="module_project_services"></a> [project\_services](#module\_project\_services) | terraform-google-modules/project-factory/google//modules/project_services | 18.0.0 |
-| <a name="module_project_services_cloud_resourcemanager"></a> [project\_services\_cloud\_resourcemanager](#module\_project\_services\_cloud\_resourcemanager) | terraform-google-modules/project-factory/google//modules/project_services | 18.0.0 |
-| <a name="module_workstations"></a> [workstations](#module\_workstations) | ./cicd_workstations | n/a |
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [google_artifact_registry_repository_iam_member.workstation_artifactregistry_reader](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/artifact_registry_repository_iam_member) | resource |
-| [google_project.project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project) | data source |
-
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -146,13 +116,13 @@ module "cicd_foundation" {
 | <a name="input_secure_source_manager_instance_id"></a> [secure\_source\_manager\_instance\_id](#input\_secure\_source\_manager\_instance\_id) | The full ID of an existing Secure Source Manager instance. If null, a new one will be created. | `string` | `null` | no |
 | <a name="input_secure_source_manager_instance_name"></a> [secure\_source\_manager\_instance\_name](#input\_secure\_source\_manager\_instance\_name) | The name of the Secure Source Manager instance to create, if secure\_source\_manager\_instance\_id is null. | `string` | `"cicd-foundation"` | no |
 | <a name="input_secure_source_manager_region"></a> [secure\_source\_manager\_region](#input\_secure\_source\_manager\_region) | The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations. | `string` | `"us-central1"` | no |
+| <a name="input_secure_source_manager_repo_git_url_to_clone"></a> [secure\_source\_manager\_repo\_git\_url\_to\_clone](#input\_secure\_source\_manager\_repo\_git\_url\_to\_clone) | The URL of a Git repository to clone into the new Secure Source Manager repository. If null, cloning is skipped. | `string` | `null` | no |
 | <a name="input_secure_source_manager_repo_name"></a> [secure\_source\_manager\_repo\_name](#input\_secure\_source\_manager\_repo\_name) | The name of the Secure Source Manager repository. | `string` | `"cicd-foundation"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_cloud_build_api_key_name"></a> [cloud\_build\_api\_key\_name](#output\_cloud\_build\_api\_key\_name) | The name of the Cloud Build API key. |
 | <a name="output_cloud_build_trigger_github_connection_needed"></a> [cloud\_build\_trigger\_github\_connection\_needed](#output\_cloud\_build\_trigger\_github\_connection\_needed) | Instructions to connect GitHub repository if using GitHub source. |
 | <a name="output_cloud_build_trigger_ids"></a> [cloud\_build\_trigger\_ids](#output\_cloud\_build\_trigger\_ids) | The full resource IDs of the Cloud Build triggers. |
 | <a name="output_cloud_build_trigger_trigger_ids"></a> [cloud\_build\_trigger\_trigger\_ids](#output\_cloud\_build\_trigger\_trigger\_ids) | The unique short IDs of the Cloud Build triggers. |
@@ -161,6 +131,5 @@ module "cicd_foundation" {
 | <a name="output_secure_source_manager_instance_html"></a> [secure\_source\_manager\_instance\_html](#output\_secure\_source\_manager\_instance\_html) | The HTML hostname of the created Secure Source Manager instance. |
 | <a name="output_secure_source_manager_repository_git_html"></a> [secure\_source\_manager\_repository\_git\_html](#output\_secure\_source\_manager\_repository\_git\_html) | The Git HTML URI of the created Secure Source Manager repository. |
 | <a name="output_secure_source_manager_repository_git_https"></a> [secure\_source\_manager\_repository\_git\_https](#output\_secure\_source\_manager\_repository\_git\_https) | The Git HTTP URI of the created Secure Source Manager repository. |
-| <a name="output_webhook_setup_instructions"></a> [webhook\_setup\_instructions](#output\_webhook\_setup\_instructions) | Instructions to set up the webhook trigger. |
-| <a name="output_webhook_setup_instructions_display"></a> [webhook\_setup\_instructions\_display](#output\_webhook\_setup\_instructions\_display) | Instructions to set up the webhook trigger. |
+
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

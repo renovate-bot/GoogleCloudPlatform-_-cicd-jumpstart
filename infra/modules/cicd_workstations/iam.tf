@@ -13,7 +13,7 @@
 # limitations under the License.
 
 module "cws_service_account" {
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v40.1.0"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v45.0.0"
 
   project_id   = data.google_project.project.project_id
   name         = var.cws_service_account_name

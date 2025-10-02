@@ -38,7 +38,7 @@ resource "google_project_iam_custom_role" "cws_image_build_runner" {
 module "cws_image_build_runner_service_account" {
   count = length(local.workstation_apps) > 0 ? 1 : 0
 
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v45.0.0"
 
   project_id   = data.google_project.project.project_id
   name         = "${local.prefix}cws-image-builder"

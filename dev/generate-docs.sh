@@ -56,7 +56,7 @@ OUTPUT_TEMPLATE=$(cat <<'EOF'
 EOF
 )
 
-for MODULE in $(find "$MODULES_DIR" -maxdepth 1 -type d -o -type l -print | grep -v "$MODULES_DIR$")
+for MODULE in $(find "$MODULES_DIR" -maxdepth 1 -type d -o -type l | grep -v "$MODULES_DIR$")
 do
   cd $MODULE \
   && \

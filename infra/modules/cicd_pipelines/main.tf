@@ -49,7 +49,7 @@ locals {
     "tf_module_github_org"  = "GoogleCloudPlatform"
     "tf_module_github_repo" = "cicd-foundation"
     "tf_module_name"        = "cicd_pipelines"
-    "tf_module_version"     = "v3-0-0"
+    "tf_module_version"     = "v3-1-0"
   }
   kms_project_id = data.google_project.project.project_id
   prefix         = var.namespace == "" ? "" : "${var.namespace}-"
@@ -71,7 +71,7 @@ data "google_project" "project" {
 
 module "project_services_cloud_resourcemanager" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.0.0"
+  version = "18.1.0"
 
   project_id                  = var.project_id
   enable_apis                 = var.enable_apis
@@ -83,7 +83,7 @@ module "project_services_cloud_resourcemanager" {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.0.0"
+  version = "18.1.0"
 
   project_id                  = var.project_id
   enable_apis                 = var.enable_apis

@@ -24,11 +24,6 @@ output "webhook_trigger_secret_name" {
   value       = local.source.ssm ? google_secret_manager_secret.webhook_trigger[0].name : null
 }
 
-output "webhook_trigger_secret_key" {
-  description = "The random key for the webhook trigger secret."
-  value       = local.source.ssm ? random_id.webhook_secret_key[0].hex : null
-  sensitive   = true
-}
 # Source Control (Secure Source Manager)
 
 # go/keep-sorted start block=yes newline_separated=yes

@@ -91,68 +91,6 @@ module "cicd_pipelines" {
 Ensure the identity running Terraform has sufficient permissions on the target project.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.6 |
-| <a name="requirement_google"></a> [google](#requirement\_google) | >= 6.11.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | >= 6.11.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | n/a |
-
-## Modules
-
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_cws_image_build_runner_service_account"></a> [cws\_image\_build\_runner\_service\_account](#module\_cws\_image\_build\_runner\_service\_account) | github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account | v36.0.1 |
-| <a name="module_docker_artifact_registry"></a> [docker\_artifact\_registry](#module\_docker\_artifact\_registry) | github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/artifact-registry | v36.0.1 |
-| <a name="module_project_services"></a> [project\_services](#module\_project\_services) | terraform-google-modules/project-factory/google//modules/project_services | 18.0.0 |
-| <a name="module_project_services_cloud_resourcemanager"></a> [project\_services\_cloud\_resourcemanager](#module\_project\_services\_cloud\_resourcemanager) | terraform-google-modules/project-factory/google//modules/project_services | 18.0.0 |
-| <a name="module_service_account_cloud_build"></a> [service\_account\_cloud\_build](#module\_service\_account\_cloud\_build) | github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account | v36.0.1 |
-| <a name="module_service_account_cloud_deploy"></a> [service\_account\_cloud\_deploy](#module\_service\_account\_cloud\_deploy) | github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account | v36.0.1 |
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [google_apikeys_key.cloud_build](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/apikeys_key) | resource |
-| [google_artifact_registry_repository_iam_member.reader](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/artifact_registry_repository_iam_member) | resource |
-| [google_artifact_registry_repository_iam_member.writer](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/artifact_registry_repository_iam_member) | resource |
-| [google_binary_authorization_attestor.vulnz_attestor](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/binary_authorization_attestor) | resource |
-| [google_binary_authorization_policy.policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/binary_authorization_policy) | resource |
-| [google_cloud_scheduler_job.cws_image_rebuild](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_scheduler_job) | resource |
-| [google_cloudbuild_trigger.ci_pipeline](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloudbuild_trigger) | resource |
-| [google_cloudbuild_worker_pool.pool](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloudbuild_worker_pool) | resource |
-| [google_clouddeploy_automation.promote-release](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_automation) | resource |
-| [google_clouddeploy_delivery_pipeline.continuous_delivery](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_delivery_pipeline) | resource |
-| [google_clouddeploy_target.cluster](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) | resource |
-| [google_clouddeploy_target.run](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/clouddeploy_target) | resource |
-| [google_container_analysis_note.vulnz_attestor](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_analysis_note) | resource |
-| [google_container_analysis_note_iam_member.vulnz_attestor_services](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_analysis_note_iam_member) | resource |
-| [google_kms_crypto_key.vulnz_attestor_key](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key) | resource |
-| [google_kms_crypto_key_iam_member.vulnz_attestor](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key_iam_member) | resource |
-| [google_kms_key_ring.keyring](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_key_ring) | resource |
-| [google_project_iam_custom_role.cws_image_build_runner](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
-| [google_project_iam_member.cws_image_build_runner](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
-| [google_secret_manager_secret.webhook_trigger](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secret_manager_secret) | resource |
-| [google_secret_manager_secret_iam_policy.policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secret_manager_secret_iam_policy) | resource |
-| [google_secret_manager_secret_version.webhook_trigger](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secret_manager_secret_version) | resource |
-| [google_secure_source_manager_instance.cicd_foundation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secure_source_manager_instance) | resource |
-| [google_secure_source_manager_instance_iam_member.instance_accessor](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secure_source_manager_instance_iam_member) | resource |
-| [google_secure_source_manager_repository.cicd_foundation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secure_source_manager_repository) | resource |
-| [google_secure_source_manager_repository_iam_binding.repo_reader](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secure_source_manager_repository_iam_binding) | resource |
-| [random_id.webhook_secret_key](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
-| [google_artifact_registry_repository.container_repository](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/artifact_registry_repository) | data source |
-| [google_iam_policy.secret_accessor](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_policy) | data source |
-| [google_kms_crypto_key_version.vulnz_attestor](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/kms_crypto_key_version) | data source |
-| [google_project.project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project) | data source |
-| [google_project_iam_custom_role.cws_image_build_runner_data](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project_iam_custom_role) | data source |
-
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -204,6 +142,7 @@ Ensure the identity running Terraform has sufficient permissions on the target p
 | <a name="input_secure_source_manager_instance_id"></a> [secure\_source\_manager\_instance\_id](#input\_secure\_source\_manager\_instance\_id) | The full ID of an existing Secure Source Manager instance. If null, a new one will be created. | `string` | `null` | no |
 | <a name="input_secure_source_manager_instance_name"></a> [secure\_source\_manager\_instance\_name](#input\_secure\_source\_manager\_instance\_name) | The name of the Secure Source Manager instance. | `string` | `"cicd-foundation"` | no |
 | <a name="input_secure_source_manager_region"></a> [secure\_source\_manager\_region](#input\_secure\_source\_manager\_region) | The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations. | `string` | `"us-central1"` | no |
+| <a name="input_secure_source_manager_repo_git_url_to_clone"></a> [secure\_source\_manager\_repo\_git\_url\_to\_clone](#input\_secure\_source\_manager\_repo\_git\_url\_to\_clone) | The URL of a Git repository to clone into the new Secure Source Manager repository. If null, cloning is skipped. | `string` | `null` | no |
 | <a name="input_secure_source_manager_repo_name"></a> [secure\_source\_manager\_repo\_name](#input\_secure\_source\_manager\_repo\_name) | The name of the Secure Source Manager repository. | `string` | `"cicd-foundation"` | no |
 | <a name="input_service_account_cloud_deploy_name"></a> [service\_account\_cloud\_deploy\_name](#input\_service\_account\_cloud\_deploy\_name) | The base name for the Cloud Deploy service accounts. Stage name will be appended. | `string` | `"cloud-deploy"` | no |
 | <a name="input_skaffold_image_tag"></a> [skaffold\_image\_tag](#input\_skaffold\_image\_tag) | The tag of the gcr.io/k8s-skaffold/skaffold image to use. | `string` | `"v2.13.2-lts"` | no |
@@ -220,7 +159,6 @@ Ensure the identity running Terraform has sufficient permissions on the target p
 | <a name="output_artifact_registry_repository_uri"></a> [artifact\_registry\_repository\_uri](#output\_artifact\_registry\_repository\_uri) | The URI of the Artifact Registry repository. |
 | <a name="output_binary_authorization_policy_id"></a> [binary\_authorization\_policy\_id](#output\_binary\_authorization\_policy\_id) | The ID of the created Binary Authorization Policy. |
 | <a name="output_cloud_build_api_key"></a> [cloud\_build\_api\_key](#output\_cloud\_build\_api\_key) | The API key for Cloud Build webhook triggers. |
-| <a name="output_cloud_build_api_key_name"></a> [cloud\_build\_api\_key\_name](#output\_cloud\_build\_api\_key\_name) | The name of the Cloud Build API key. |
 | <a name="output_cloud_build_service_account_email"></a> [cloud\_build\_service\_account\_email](#output\_cloud\_build\_service\_account\_email) | The email of the Cloud Build service account. |
 | <a name="output_cloud_build_service_account_id"></a> [cloud\_build\_service\_account\_id](#output\_cloud\_build\_service\_account\_id) | The ID of the Cloud Build service account. |
 | <a name="output_cloud_build_trigger_github_connection_needed"></a> [cloud\_build\_trigger\_github\_connection\_needed](#output\_cloud\_build\_trigger\_github\_connection\_needed) | Instructions to connect GitHub repository if using GitHub source. |
@@ -238,6 +176,6 @@ Ensure the identity running Terraform has sufficient permissions on the target p
 | <a name="output_secure_source_manager_repository_id"></a> [secure\_source\_manager\_repository\_id](#output\_secure\_source\_manager\_repository\_id) | The full ID of the created Secure Source Manager repository resource. |
 | <a name="output_secure_source_manager_repository_name"></a> [secure\_source\_manager\_repository\_name](#output\_secure\_source\_manager\_repository\_name) | The short name (repository\_id) of the created Secure Source Manager repository. |
 | <a name="output_webhook_trigger_secret_id"></a> [webhook\_trigger\_secret\_id](#output\_webhook\_trigger\_secret\_id) | The ID of the webhook trigger secret. |
-| <a name="output_webhook_trigger_secret_key"></a> [webhook\_trigger\_secret\_key](#output\_webhook\_trigger\_secret\_key) | The random key for the webhook trigger secret. |
 | <a name="output_webhook_trigger_secret_name"></a> [webhook\_trigger\_secret\_name](#output\_webhook\_trigger\_secret\_name) | The name of the webhook trigger secret. |
+
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

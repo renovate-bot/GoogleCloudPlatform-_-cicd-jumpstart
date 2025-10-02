@@ -15,7 +15,7 @@
 module "service_account_cloud_deploy" {
   for_each = length(local.cloud_deploy_apps) > 0 ? var.stages : {}
 
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v36.0.1"
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/iam-service-account?ref=v45.0.0"
 
   project_id   = coalesce(each.value.project_id, var.project_id)
   name         = "${local.prefix}${var.service_account_cloud_deploy_name}-${each.key}"
