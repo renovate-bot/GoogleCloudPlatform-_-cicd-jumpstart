@@ -24,7 +24,7 @@ locals {
     for k, v in var.cws_custom_images : k => {
       runtime = "workstations"
       build = {
-        dockerfile_path = try(v.build.dockerfile_path, null)
+        skaffold_path   = try(v.build.skaffold_path, null)
         timeout_seconds = try(v.build.timeout_seconds, null)
         machine_type    = try(v.build.machine_type, null)
       }

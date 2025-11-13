@@ -78,7 +78,7 @@ locals {
             name          = "gcr.io/k8s-skaffold/skaffold:$${_SKAFFOLD_IMAGE_TAG}"
             wait_for      = (local.ci_apps_flags[app_source_key].needs_clone_step) ? ["clone"] : []
             allow_failure = false
-            dir           = try(app_source_config.config.build.dockerfile_path, "apps/${app_source_config.name}")
+            dir           = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
             entrypoint    = "/bin/sh"
             args = [
               "-c",
@@ -99,7 +99,7 @@ locals {
             name          = "gcr.io/cloud-builders/docker:$${_DOCKER_IMAGE_TAG}"
             wait_for      = ["build"]
             allow_failure = false
-            dir           = try(app_source_config.config.build.dockerfile_path, "apps/${app_source_config.name}")
+            dir           = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
             entrypoint    = "/bin/sh"
             args = [
               "-c",
@@ -134,10 +134,10 @@ locals {
               <<-EOT
                 POLICY_FILE=$(mktemp)
                 echo "$${_KRITIS_POLICY_BASE64}" | base64 -d > "$$POLICY_FILE"
-                IMAGES=$$(/bin/cat ./$${_DOCKERFILE_PATH}/images.txt)
+                IMAGES=$$(/bin/cat ./$${_SKAFFOLD_PATH}/images.txt)
                 for IMAGE in $$IMAGES; do
                   DIGEST_FILENAME=$$(/bin/echo "$$IMAGE" | /bin/sed 's/.*@sha256://').digest
-                  IMAGE_DIGEST=$$(/bin/cat "./$${_DOCKERFILE_PATH}/$$DIGEST_FILENAME")
+                  IMAGE_DIGEST=$$(/bin/cat "./$${_SKAFFOLD_PATH}/$$DIGEST_FILENAME")
                   /kritis/signer \
                     -v=10 \
                     -alsologtostderr \
@@ -161,7 +161,7 @@ locals {
             name          = "gcr.io/google.com/cloudsdktool/cloud-sdk:$${_GCLOUD_IMAGE_TAG}"
             wait_for      = [local.has_kritis_signer ? "vulnsign" : "fetchImageDigest"]
             allow_failure = false
-            dir           = try(app_source_config.config.build.dockerfile_path, "apps/${app_source_config.name}")
+            dir           = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
             entrypoint    = "/bin/sh"
             args = [
               "-c",
@@ -189,20 +189,19 @@ locals {
   }
 
   # Files to include in the Cloud Build context for each application,
-  # typically based on the dockerfile_path.
+  # typically based on the skaffold_path.
   ci_included_files = {
     for app_name, app_config in var.apps : app_name => [
-      "${try(app_config.build.dockerfile_path, "apps/${app_name}")}/**",
+      "${coalesce(try(app_config.build.skaffold_path, null), "apps/${app_name}")}/**",
     ]
   }
 
   # Cloud Build substitutions for each app/source combination.
-  # Includes details like Dockerfile path, image tags, KMS keys, and pipeline names.
+  # Includes details like path to the skaffold.yaml file, image tags, KMS keys, and pipeline names.
   ci_substitutions = {
     for app_source_key, app_source_config in local.ci_apps : app_source_key => {
       # go/keep-sorted start
       _APP_NAME              = app_source_config.name
-      _DOCKERFILE_PATH       = try(app_source_config.config.build.dockerfile_path, "apps/${app_source_config.name}")
       _DOCKER_IMAGE_TAG      = var.docker_image_tag
       _GCLOUD_IMAGE_TAG      = var.gcloud_image_tag
       _GIT_CLONE_URL         = (local.ci_apps_flags[app_source_key].needs_clone_step) ? local.source_uri : ""
@@ -217,6 +216,7 @@ locals {
       _SKAFFOLD_DEFAULT_REPO = local.artifact_registry_repository_uri
       _SKAFFOLD_IMAGE_TAG    = var.skaffold_image_tag
       _SKAFFOLD_OUTPUT       = var.skaffold_output
+      _SKAFFOLD_PATH         = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
       _SKAFFOLD_QUIET        = var.skaffold_quiet
       # go/keep-sorted end
     }

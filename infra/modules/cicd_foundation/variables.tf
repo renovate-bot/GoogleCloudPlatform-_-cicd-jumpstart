@@ -66,8 +66,8 @@ variable "secure_source_manager_region" {
 variable "apps" {
   type = map(object({
     build = optional(object({
-      # The relative path to the Dockerfile within the repository.
-      dockerfile_path = optional(string)
+      # The relative path to the directory containing skaffold.yaml within the repository.
+      skaffold_path = optional(string)
       # The timeout for the build in seconds.
       timeout_seconds = number
       # The machine type to use for the build.
@@ -279,7 +279,7 @@ variable "cws_configs" {
 variable "cws_custom_images" {
   type = map(object({
     build = optional(object({
-      dockerfile_path = optional(string)
+      skaffold_path   = optional(string)
       timeout_seconds = number
       machine_type    = string
       })

@@ -230,7 +230,7 @@ variable "cws_configs" {
 variable "cws_custom_images" {
   type = map(object({
     build = optional(object({
-      dockerfile_path = optional(string)
+      skaffold_path   = optional(string)
       timeout_seconds = number
       machine_type    = string
       })
@@ -248,28 +248,28 @@ variable "cws_custom_images" {
     // go/keep-sorted start block=yes
     "android-studio" : {
       build = {
-        dockerfile_path = "examples/images/android/android-studio"
+        skaffold_path   = "examples/images/android/android-studio"
         timeout_seconds = 7200
         machine_type    = "E2_HIGHCPU_32"
       }
     },
     "android-studio-for-platform" : {
       build = {
-        dockerfile_path = "examples/images/android-open-source-project/android-studio-for-platform"
+        skaffold_path   = "examples/images/android-open-source-project/android-studio-for-platform"
         timeout_seconds = 7200
         machine_type    = "E2_HIGHCPU_32"
       }
     },
     "code-oss" : {
       build = {
-        dockerfile_path = "examples/images/android-open-source-project/code-oss"
+        skaffold_path   = "examples/images/android-open-source-project/code-oss"
         timeout_seconds = 7200
         machine_type    = "E2_HIGHCPU_32"
       }
     },
     "repo-builder" : {
       build = {
-        dockerfile_path = "examples/images/android-open-source-project/repo-builder"
+        skaffold_path   = "examples/images/android-open-source-project/repo-builder"
         timeout_seconds = 7200
         machine_type    = "E2_HIGHCPU_32"
       }
