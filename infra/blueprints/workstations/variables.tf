@@ -241,6 +241,10 @@ variable "cws_custom_images" {
       scheduler_region = optional(string)
       ci_schedule      = string
     })),
+    git_repo = optional(object({
+      url    = string
+      branch = string
+    })),
     github = optional(object({
       owner          = string
       repo           = string
@@ -256,6 +260,12 @@ variable "cws_custom_images" {
     Map of applications as found within the apps/ folder of the repository,
     their build configuration, runtime, deployment stages and parameters.
   EOT
+  validation {
+    condition = alltrue([
+      for k, v in var.cws_custom_images : sum([v.github != null ? 1 : 0, v.ssm != null ? 1 : 0, v.git_repo != null ? 1 : 0]) <= 1
+    ])
+    error_message = "A custom image can specify at most one source: github, ssm, or git_repo."
+  }
   default = {
     // go/keep-sorted start block=yes
     "android-studio" : {

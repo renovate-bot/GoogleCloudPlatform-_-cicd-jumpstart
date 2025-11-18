@@ -20,22 +20,20 @@ locals {
 
   app_source = {
     for k, v in var.apps : k => {
-      has_github = v.github != null || (v.github == null && v.ssm == null && local.source.github)
-      has_ssm    = v.ssm != null || (v.github == null && v.ssm == null && local.source.ssm)
-      github = v.github != null ? v.github : (
-        local.source.github ? {
-          owner          = var.github_owner
-          repo           = var.github_repo
-          branch_pattern = var.git_branches_regexp_trigger
-        } : null
-      )
-      ssm = v.ssm != null ? v.ssm : (
-        local.source.ssm ? {
-          instance_id = local.ssm_instance_id
-          repo_name   = var.secure_source_manager_repo_name
-          branch      = var.git_branch_trigger
-        } : null
-      )
+      has_github   = v.github != null || (v.ssm == null && v.git_repo == null && local.source.github)
+      has_ssm      = v.ssm != null || (v.github == null && v.git_repo == null && local.source.ssm)
+      has_git_repo = v.git_repo != null
+      github = v.github != null ? v.github : (v.ssm == null && v.git_repo == null && local.source.github ? {
+        owner          = var.github_owner
+        repo           = var.github_repo
+        branch_pattern = var.git_branches_regexp_trigger
+      } : null)
+      ssm = v.ssm != null ? v.ssm : (v.github == null && v.git_repo == null && local.source.ssm ? {
+        instance_id = local.ssm_instance_id
+        repo_name   = var.secure_source_manager_repo_name
+        branch      = var.git_branch_trigger
+      } : null)
+      git_repo = v.git_repo
     }
   }
 
@@ -44,12 +42,16 @@ locals {
   # Webhook triggers are only created if using SSM.
   # Manual and GitHub triggers are only created if using GitHub.
   ci_apps = {
-    for app_source_pair in setproduct(keys(var.apps), ["github", "manual", "webhook"]) : contains(["github"], app_source_pair[1]) ? "${app_source_pair[0]}-${app_source_pair[1]}" : "${app_source_pair[0]}" => {
+    for app_source_pair in setproduct(keys(var.apps), ["github", "manual", "webhook"]) : contains(["github", "manual"], app_source_pair[1]) ? "${app_source_pair[0]}-${app_source_pair[1]}" : "${app_source_pair[0]}" => {
       name         = app_source_pair[0]
       config       = var.apps[app_source_pair[0]]
       trigger_type = app_source_pair[1]
     }
-    if(app_source_pair[1] == "webhook" && local.app_source[app_source_pair[0]].has_ssm) || (app_source_pair[1] == "github" && local.app_source[app_source_pair[0]].has_github) || (app_source_pair[1] == "manual" && local.app_source[app_source_pair[0]].has_github)
+    if(
+      (app_source_pair[1] == "webhook" && local.app_source[app_source_pair[0]].has_ssm) ||
+      (app_source_pair[1] == "github" && local.app_source[app_source_pair[0]].has_github) ||
+      (app_source_pair[1] == "manual" && (local.app_source[app_source_pair[0]].has_github || local.app_source[app_source_pair[0]].has_git_repo))
+    )
   }
 
   # Boolean flags for each application source combination.
@@ -58,8 +60,9 @@ locals {
     for k, v in local.ci_apps : k => {
       is_github_trigger     = v.trigger_type == "github",
       is_webhook_trigger    = v.trigger_type == "webhook",
-      needs_source_to_build = v.trigger_type == "manual" && local.app_source[v.name].has_github,
-      needs_clone_step      = local.app_source[v.name].has_ssm
+      is_git_repo_manual    = v.trigger_type == "manual" && local.app_source[v.name].has_git_repo,
+      needs_source_to_build = v.trigger_type == "manual" && (local.app_source[v.name].has_github || local.app_source[v.name].has_git_repo),
+      needs_clone_step      = local.app_source[v.name].has_ssm || (v.trigger_type == "manual" && local.app_source[v.name].has_git_repo)
     }
   }
 
@@ -70,7 +73,7 @@ locals {
       name         = app_source_config.name
       config       = app_source_config.config
       trigger_type = app_source_config.trigger_type
-      postfix      = app_source_config.trigger_type == "github" ? "-github" : ""
+      postfix      = app_source_config.trigger_type == "github" || app_source_config.trigger_type == "manual" ? "-${app_source_config.trigger_type}" : ""
       steps = concat(
         (local.ci_apps_flags[app_source_key].needs_clone_step) ? [
           # Clones the source repository into the workspace.
@@ -86,7 +89,10 @@ locals {
               "-c",
               <<-EOT
                 git clone "$${_GIT_CLONE_URL}" /workspace
-                if [ -n "$${COMMIT_SHA}" ]; then
+                if [ "$${_IS_GIT_REPO_MANUAL}" == "true" ]; then
+                  cd /workspace
+                  git checkout "$${_GIT_REPO_REF}"
+                elif [ -n "$${COMMIT_SHA}" ]; then
                   cd /workspace
                   git reset --hard "$${COMMIT_SHA}"
                 fi
@@ -229,7 +235,9 @@ locals {
       _APP_NAME              = app_source_config.name
       _DOCKER_IMAGE_TAG      = var.docker_image_tag
       _GCLOUD_IMAGE_TAG      = var.gcloud_image_tag
-      _GIT_CLONE_URL         = (local.ci_apps_flags[app_source_key].needs_clone_step) ? local.source_uris[app_source_config.name] : ""
+      _GIT_CLONE_URL         = local.ci_apps_flags[app_source_key].is_git_repo_manual ? local.app_source[app_source_config.name].git_repo.url : (local.app_source[app_source_config.name].has_ssm ? local.source_uris[app_source_config.name] : "")
+      _GIT_REPO_REF          = local.app_source[app_source_config.name].has_git_repo ? "refs/heads/${local.app_source[app_source_config.name].git_repo.branch}" : ""
+      _IS_GIT_REPO_MANUAL    = tostring(local.ci_apps_flags[app_source_key].is_git_repo_manual)
       _KMS_DIGEST_ALG        = var.kms_digest_alg
       _KMS_KEY_NAME          = var.kms_key_name
       _KRITIS_POLICY_BASE64  = base64encode(local.policy_content)
@@ -260,7 +268,9 @@ locals {
   source_uris = {
     for k, v in local.app_source : k =>
     v.has_github ? "https://github.com/${v.github.owner}/${v.github.repo}.git" : (
-      v.has_ssm ? google_secure_source_manager_repository.cicd_foundation[0].uris[0].git_https : ""
+      v.has_ssm ? google_secure_source_manager_repository.cicd_foundation[0].uris[0].git_https : (
+        v.has_git_repo ? v.git_repo.url : ""
+      )
     )
   }
   # go/keep-sorted end
@@ -330,8 +340,8 @@ resource "google_cloudbuild_trigger" "ci_pipeline" {
 
     content {
       uri       = local.source_uris[each.value.name]
-      ref       = "refs/heads/${local.app_source[each.value.name].has_github ? var.git_branch_trigger : local.app_source[each.value.name].ssm.branch}"
-      repo_type = local.app_source[each.value.name].has_github ? "GITHUB" : "UNKNOWN"
+      ref       = local.ci_apps_flags[each.key].is_git_repo_manual ? "refs/heads/${local.app_source[each.value.name].git_repo.branch}" : "refs/heads/${var.git_branch_trigger}"
+      repo_type = "GITHUB"
     }
   }
 

@@ -76,6 +76,10 @@ variable "apps" {
     )
     runtime = optional(string, "cloudrun"),
     stages  = optional(map(map(string))),
+    git_repo = optional(object({
+      url    = string
+      branch = string
+    })),
     github = optional(object({
       owner          = string
       repo           = string
@@ -91,9 +95,9 @@ variable "apps" {
   default     = {}
   validation {
     condition = alltrue([
-      for k, v in var.apps : v.github == null || v.ssm == null
+      for k, v in var.apps : sum([v.github != null ? 1 : 0, v.ssm != null ? 1 : 0, v.git_repo != null ? 1 : 0]) <= 1
     ])
-    error_message = "An application cannot specify both GitHub and Secure Source Manager as source."
+    error_message = "An application can specify at most one source: github, ssm, or git_repo."
   }
 }
 
@@ -310,6 +314,10 @@ variable "cws_custom_images" {
       scheduler_region = string
       ci_schedule      = string
     })),
+    git_repo = optional(object({
+      url    = string
+      branch = string
+    })),
     github = optional(object({
       owner          = string
       repo           = string
@@ -328,8 +336,8 @@ variable "cws_custom_images" {
   default     = {}
   validation {
     condition = alltrue([
-      for k, v in var.cws_custom_images : v.github == null || v.ssm == null
+      for k, v in var.cws_custom_images : sum([v.github != null ? 1 : 0, v.ssm != null ? 1 : 0, v.git_repo != null ? 1 : 0]) <= 1
     ])
-    error_message = "A custom image cannot specify both GitHub and Secure Source Manager as source."
+    error_message = "A custom image can specify at most one source: github, ssm, or git_repo."
   }
 }
