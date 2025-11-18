@@ -20,20 +20,22 @@ locals {
 
   app_source = {
     for k, v in var.apps : k => {
-      has_github   = v.github != null || (v.ssm == null && v.git_repo == null && local.source.github)
-      has_ssm      = v.ssm != null || (v.github == null && v.git_repo == null && local.source.ssm)
-      has_git_repo = v.git_repo != null
+      # go/keep-sorted start
+      git_repo = v.git_repo
       github = v.github != null ? v.github : (v.ssm == null && v.git_repo == null && local.source.github ? {
         owner          = var.github_owner
         repo           = var.github_repo
         branch_pattern = var.git_branches_regexp_trigger
       } : null)
+      has_git_repo = v.git_repo != null
+      has_github   = v.github != null || (v.ssm == null && v.git_repo == null && local.source.github)
+      has_ssm      = v.ssm != null || (v.github == null && v.git_repo == null && local.source.ssm)
       ssm = v.ssm != null ? v.ssm : (v.github == null && v.git_repo == null && local.source.ssm ? {
         instance_id = local.ssm_instance_id
         repo_name   = var.secure_source_manager_repo_name
         branch      = var.git_branch_trigger
       } : null)
-      git_repo = v.git_repo
+      # go/keep-sorted end
     }
   }
 
@@ -150,7 +152,7 @@ locals {
             # go/keep-sorted end
           }
         ],
-        local.has_kritis_signer ? [
+        local.use_binary_authorization ? [
           # Signs the built images using the Kritis signer.
           {
             # go/keep-sorted start prefix_order=id,name,wait_for,allow_failure,dir,entrypoint,args
@@ -190,7 +192,7 @@ locals {
             # go/keep-sorted start prefix_order=id,name,wait_for,allow_failure,dir,entrypoint,args
             id            = "createRelease"
             name          = "gcr.io/google.com/cloudsdktool/cloud-sdk:$${_GCLOUD_IMAGE_TAG}"
-            wait_for      = [local.has_kritis_signer ? "vulnsign" : "fetchImageDigest"]
+            wait_for      = [local.use_binary_authorization ? "vulnsign" : "fetchImageDigest"]
             allow_failure = false
             dir           = local.app_skaffold_paths[app_source_config.name]
             entrypoint    = "/bin/sh"
@@ -243,7 +245,7 @@ locals {
       _KRITIS_POLICY_BASE64  = base64encode(local.policy_content)
       _KRITIS_SIGNER_IMAGE   = var.kritis_signer_image
       _NAMESPACE             = var.namespace
-      _NOTE_NAME             = google_container_analysis_note.vulnz_attestor.id
+      _NOTE_NAME             = local.use_binary_authorization ? google_container_analysis_note.vulnz_attestor[0].id : ""
       _PIPELINE_NAME         = try(google_clouddeploy_delivery_pipeline.continuous_delivery[app_source_config.name].name, "")
       _REGION                = var.cloud_build_region
       _SKAFFOLD_DEFAULT_REPO = local.artifact_registry_repository_uri
@@ -255,11 +257,10 @@ locals {
     }
   }
 
-  # Boolean indicating whether a Kritis signer image is provided.
-  has_kritis_signer = var.kritis_signer_image != null && var.kritis_signer_image != ""
+  # The content of the Kritis policy file, or the default policy if not specified. Empty if Binary Authorization is not used.
+  kritis_policy  = var.kritis_policy_file == null ? var.kritis_policy_default : file(var.kritis_policy_file)
 
-  # The content of the Kritis policy file, or the default policy if not specified.
-  policy_content = var.kritis_policy_file == null ? var.kritis_policy_default : file(var.kritis_policy_file)
+  policy_content = local.use_binary_authorization ? local.kritis_policy : ""
 
   # The source repository solution: GitHub or Secure Source Manager.
   source_solution = local.source.github ? "github" : (local.source.ssm ? "ssm" : null)

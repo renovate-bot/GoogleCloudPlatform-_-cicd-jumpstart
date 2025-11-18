@@ -50,3 +50,5 @@ developers = [
 
 # cf. ../README.md
 kritis_signer_image = "gcr.io/REPLACE_WITH_YOUR_PROD_SUPPLYCHAIN_PROJECT_ID/kritis-signer@sha256:REPLACE_WITH_SHA256_OF_IMAGE"
+
+# binary_authorization_always_create = true

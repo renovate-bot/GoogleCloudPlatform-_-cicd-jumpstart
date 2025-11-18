@@ -367,6 +367,12 @@ variable "skaffold_quiet" {
 # Binary Authorization
 
 # go/keep-sorted start block=yes newline_separated=yes
+variable "binary_authorization_always_create" {
+  type        = bool
+  description = "If true, create Binary Authorization resources even if kritis_signer_image is not provided."
+  default     = false
+}
+
 variable "kms_digest_alg" {
   type        = string
   description = "The digest algorithm to use for KMS signing."

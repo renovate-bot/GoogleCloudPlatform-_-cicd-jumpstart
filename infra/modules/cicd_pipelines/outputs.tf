@@ -132,7 +132,7 @@ output "cloud_build_worker_pool_ids" {
 # go/keep-sorted start block=yes newline_separated=yes
 output "binary_authorization_policy_id" {
   description = "The ID of the created Binary Authorization Policy."
-  value       = google_binary_authorization_policy.policy.id
+  value       = local.use_binary_authorization ? google_binary_authorization_policy.policy[0].id : null
 }
 # go/keep-sorted end
 

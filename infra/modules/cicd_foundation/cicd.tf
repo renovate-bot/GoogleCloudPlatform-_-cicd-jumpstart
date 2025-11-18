@@ -24,6 +24,7 @@ module "cicd_pipelines" {
   apps_directory                              = var.apps_directory
   artifact_registry_id                        = var.artifact_registry_id
   artifact_registry_region                    = var.artifact_registry_region
+  binary_authorization_always_create          = var.binary_authorization_always_create
   cloud_build_api_key_display_name            = var.cloud_build_api_key_display_name
   cloud_build_api_key_name                    = var.cloud_build_api_key_name
   cloud_build_region                          = var.cloud_build_region
@@ -34,6 +35,7 @@ module "cicd_pipelines" {
   git_branches_regexp_trigger                 = var.git_branches_regexp_trigger
   github_owner                                = var.github_owner
   github_repo                                 = var.github_repo
+  kritis_signer_image                         = var.kritis_signer_image
   secret_manager_region                       = var.secret_manager_region
   secure_source_manager_always_create         = var.secure_source_manager_always_create
   secure_source_manager_deletion_policy       = var.secure_source_manager_deletion_policy

@@ -207,6 +207,22 @@ variable "cloud_build_api_key_name" {
 }
 # go/keep-sorted end
 
+# Binary Authorization
+
+# go/keep-sorted start block=yes newline_separated=yes
+variable "binary_authorization_always_create" {
+  type        = bool
+  description = "If true, create Binary Authorization resources even if kritis_signer_image is not provided."
+  default     = false
+}
+
+variable "kritis_signer_image" {
+  type        = string
+  description = "The container image reference for the Kritis signer. If empty, signing is disabled."
+  default     = ""
+}
+# go/keep-sorted end
+
 # Cloud Workstations
 
 # go/keep-sorted start block=yes newline_separated=yes
