@@ -1,5 +1,0 @@
-send_cls_to('cicd-foundation-team+reviews');
-
-define Main {
-  reassign_to_list(google_group('cicd-foundation-team'));
-}

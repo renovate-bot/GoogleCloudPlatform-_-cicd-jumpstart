@@ -21,6 +21,7 @@ module "cicd_pipelines" {
   enable_apis = var.enable_apis
   # go/keep-sorted start
   apps                                        = local.all_apps
+  apps_directory                              = var.apps_directory
   artifact_registry_id                        = var.artifact_registry_id
   artifact_registry_region                    = var.artifact_registry_region
   cloud_build_api_key_display_name            = var.cloud_build_api_key_display_name

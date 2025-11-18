@@ -14,6 +14,10 @@
 
 locals {
   # go/keep-sorted start block=yes newline_separated=yes
+  app_skaffold_paths = {
+    for name, config in var.apps : name => coalesce(try(config.build.skaffold_path, null), "${var.apps_directory}/${name}")
+  }
+
   # A filtered product of applications and trigger types.
   # Each entry contains the name (from var.apps), the corresponding config (from var.apps), and the trigger type (from local.trigger_sources).
   # Webhook triggers are only created if using SSM.
@@ -78,7 +82,7 @@ locals {
             name          = "gcr.io/k8s-skaffold/skaffold:$${_SKAFFOLD_IMAGE_TAG}"
             wait_for      = (local.ci_apps_flags[app_source_key].needs_clone_step) ? ["clone"] : []
             allow_failure = false
-            dir           = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
+            dir           = local.app_skaffold_paths[app_source_config.name]
             entrypoint    = "/bin/sh"
             args = [
               "-c",
@@ -99,7 +103,7 @@ locals {
             name          = "gcr.io/cloud-builders/docker:$${_DOCKER_IMAGE_TAG}"
             wait_for      = ["build"]
             allow_failure = false
-            dir           = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
+            dir           = local.app_skaffold_paths[app_source_config.name]
             entrypoint    = "/bin/sh"
             args = [
               "-c",
@@ -161,7 +165,7 @@ locals {
             name          = "gcr.io/google.com/cloudsdktool/cloud-sdk:$${_GCLOUD_IMAGE_TAG}"
             wait_for      = [local.has_kritis_signer ? "vulnsign" : "fetchImageDigest"]
             allow_failure = false
-            dir           = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
+            dir           = local.app_skaffold_paths[app_source_config.name]
             entrypoint    = "/bin/sh"
             args = [
               "-c",
@@ -192,7 +196,7 @@ locals {
   # typically based on the skaffold_path.
   ci_included_files = {
     for app_name, app_config in var.apps : app_name => [
-      "${coalesce(try(app_config.build.skaffold_path, null), "apps/${app_name}")}/**",
+      "${local.app_skaffold_paths[app_name]}/**",
     ]
   }
 
@@ -216,7 +220,7 @@ locals {
       _SKAFFOLD_DEFAULT_REPO = local.artifact_registry_repository_uri
       _SKAFFOLD_IMAGE_TAG    = var.skaffold_image_tag
       _SKAFFOLD_OUTPUT       = var.skaffold_output
-      _SKAFFOLD_PATH         = coalesce(try(app_source_config.config.build.skaffold_path, null), "apps/${app_source_config.name}")
+      _SKAFFOLD_PATH         = local.app_skaffold_paths[app_source_config.name]
       _SKAFFOLD_QUIET        = var.skaffold_quiet
       # go/keep-sorted end
     }

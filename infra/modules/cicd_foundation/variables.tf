@@ -81,6 +81,12 @@ variable "apps" {
   default     = {}
 }
 
+variable "apps_directory" {
+  type        = string
+  description = "The root directory for applications in the repository. This is used to construct the path to an application's source code if `skaffold_path` is not specified."
+  default     = "apps"
+}
+
 # Artifact Registry
 
 # go/keep-sorted start block=yes newline_separated=yes

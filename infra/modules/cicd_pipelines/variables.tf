@@ -139,6 +139,12 @@ variable "apps" {
   }
 }
 
+variable "apps_directory" {
+  type        = string
+  description = "The root directory for applications in the repository. This is used to construct the path to an application's source code if `skaffold_path` is not specified."
+  default     = "apps"
+}
+
 variable "runtimes" {
   type        = list(string)
   description = "List of supported runtime solutions for applications."
