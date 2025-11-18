@@ -101,7 +101,17 @@ variable "apps" {
       })
     )
     runtime = optional(string, "cloudrun"),
-    stages  = optional(map(map(string)))
+    stages  = optional(map(map(string))),
+    github = optional(object({
+      owner          = string
+      repo           = string
+      branch_pattern = string
+    })),
+    ssm = optional(object({
+      instance_id = string
+      repo_name   = string
+      branch      = string
+    })),
     workstation_config = optional(object({
       # The region to use for the Cloud Scheduler job.
       scheduler_region = optional(string)
@@ -122,6 +132,12 @@ variable "apps" {
       contains(var.runtimes, app_value.runtime)
     ])
     error_message = "Runtime must be one of the allowed runtimes: ${join(", ", var.runtimes)}."
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.apps : v.github == null || v.ssm == null
+    ])
+    error_message = "An application cannot specify both GitHub and Secure Source Manager as source."
   }
   validation {
     condition = alltrue([

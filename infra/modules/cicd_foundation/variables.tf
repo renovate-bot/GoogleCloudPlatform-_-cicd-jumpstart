@@ -75,10 +75,26 @@ variable "apps" {
       })
     )
     runtime = optional(string, "cloudrun"),
-    stages  = optional(map(map(string)))
+    stages  = optional(map(map(string))),
+    github = optional(object({
+      owner          = string
+      repo           = string
+      branch_pattern = string
+    })),
+    ssm = optional(object({
+      instance_id = string
+      repo_name   = string
+      branch      = string
+    }))
   }))
   description = "Map of applications to be deployed."
   default     = {}
+  validation {
+    condition = alltrue([
+      for k, v in var.apps : v.github == null || v.ssm == null
+    ])
+    error_message = "An application cannot specify both GitHub and Secure Source Manager as source."
+  }
 }
 
 variable "apps_directory" {
@@ -293,6 +309,16 @@ variable "cws_custom_images" {
     workstation_config = optional(object({
       scheduler_region = string
       ci_schedule      = string
+    })),
+    github = optional(object({
+      owner          = string
+      repo           = string
+      branch_pattern = string
+    })),
+    ssm = optional(object({
+      instance_id = string
+      repo_name   = string
+      branch      = string
     }))
   }))
   description = <<-EOT
@@ -300,4 +326,10 @@ variable "cws_custom_images" {
     their build configuration, runtime, deployment stages and parameters.
   EOT
   default     = {}
+  validation {
+    condition = alltrue([
+      for k, v in var.cws_custom_images : v.github == null || v.ssm == null
+    ])
+    error_message = "A custom image cannot specify both GitHub and Secure Source Manager as source."
+  }
 }

@@ -188,9 +188,11 @@ variable "cws_configs" {
     image                           = optional(string)
     custom_image_names              = optional(list(string), [])
     creators                        = optional(list(string))
+    display_name                    = optional(string)
     instances = optional(list(object({
-      name  = string
-      users = list(string)
+      name         = string
+      display_name = optional(string)
+      users        = list(string)
     })))
   }))
   description = "A map of Cloud Workstation configurations."
@@ -238,6 +240,16 @@ variable "cws_custom_images" {
     workstation_config = optional(object({
       scheduler_region = optional(string)
       ci_schedule      = string
+    })),
+    github = optional(object({
+      owner          = string
+      repo           = string
+      branch_pattern = string
+    })),
+    ssm = optional(object({
+      instance_id = string
+      repo_name   = string
+      branch      = string
     }))
   }))
   description = <<-EOT

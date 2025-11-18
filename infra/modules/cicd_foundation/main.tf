@@ -32,6 +32,8 @@ locals {
         scheduler_region = try(v.workstation_config.scheduler_region, null)
         ci_schedule      = try(v.workstation_config.ci_schedule, null)
       }
+      github = v.github
+      ssm    = v.ssm
     }
   }
   default_labels = {
