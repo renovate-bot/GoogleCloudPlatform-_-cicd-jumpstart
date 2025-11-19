@@ -64,7 +64,7 @@ data "google_project" "project" {
 
 module "project_services_cloud_resource_manager" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.0.0"
+  version = "18.1.0"
 
   project_id                  = var.project_id
   enable_apis                 = var.enable_apis
@@ -76,7 +76,7 @@ module "project_services_cloud_resource_manager" {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.0.0"
+  version = "18.1.0"
 
   project_id                  = var.project_id
   enable_apis                 = var.enable_apis

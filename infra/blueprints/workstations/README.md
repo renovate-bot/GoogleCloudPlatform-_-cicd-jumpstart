@@ -41,12 +41,20 @@ workstations. These images must be stored in an Artifact Registry repository,
 which is assumed to be provisioned by the `cicd_foundation` module.
 
 If custom images are defined via the `cws_custom_images` variable, the module
-will also provision the necessary CI/CD components to build and maintain them:
+will also provision the necessary CI/CD components to build and maintain them
+using either GitHub or Secure Source Manager (SSM) as source:
 
+*   **Secure Source Manager**: If `github_owner` is not provided, a Secure
+    Source Manager instance and repository are provisioned. If the variable
+    `secure_source_manager_repo_git_url_to_clone` is set, a one-time Cloud
+    Build trigger clones the specified Git repository and pushes its content to
+    the SSM repository.
 *   **Cloud Build Trigger**: For each custom image, a trigger is created that
-    builds the container image from a specified source repository (e.g., Cloud
-    Source Repositories) containing a `Dockerfile` and pushes it to Artifact
-    Registry upon changes to the source.
+    builds the container image from source (GitHub or SSM) containing a
+    `skaffold.yaml` and pushes it to Artifact Registry upon changes to the
+    source. If SSM is used, webhooks are automatically configured to trigger
+    builds on push events; the initial clone and push described above will
+    trigger the first build.
 *   **Cloud Scheduler**: For each custom image, a scheduled job is created that
     periodically triggers Cloud Build to rebuild the image. This is useful for
     incorporating security patches from base images or updating dependencies,

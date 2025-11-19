@@ -57,10 +57,12 @@ locals {
 module "workstations" {
   source = "./cicd_workstations"
 
-  project_id   = data.google_project.project.project_id
-  enable_apis  = var.enable_apis
-  cws_clusters = var.cws_clusters
-  cws_configs  = local.cws_configs_hydrated
+  project_id               = data.google_project.project.project_id
+  enable_apis              = var.enable_apis
+  cws_clusters             = var.cws_clusters
+  cws_configs              = local.cws_configs_hydrated
+  cws_scopes               = var.cws_scopes
+  cws_service_account_name = var.cws_service_account_name
 }
 
 resource "google_artifact_registry_repository_iam_member" "workstation_artifactregistry_reader" {

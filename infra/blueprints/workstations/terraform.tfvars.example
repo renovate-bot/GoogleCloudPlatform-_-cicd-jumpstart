@@ -1,4 +1,4 @@
-# Copyright 2023-2005 Google LLC
+# Copyright 2023-2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,49 +15,49 @@
 # This is an example tfvars file. Copy this to terraform.tfvars and adjust the values.
 
 # Required: The Google Cloud Project ID to deploy the resources into.
-project_id = "REPLACE_WITH_YOUR_PROJECT_ID"
+project_id = "YOUR_PROJECT_ID"
 
 # Optional: The default region for compute resources. Defaults to "us-central1".
-# vpc_region = "europe-west1"
+#vpc_region = "europe-west1"
 
 # Optional: The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations.
-# secure_source_manager_region = "europe-west4"
+#secure_source_manager_region = "europe-west4"
 
 ## Artifact Registry
 # Optional: The ID of the Artifact Registry repository for container images.
-# artifact_registry_repository_id = "my-workstation-images"
+#artifact_registry_repository_id = "YOUR_REPOSITORY_ID"
 
 ## Source Control (GitHub & Secure Source Manager)
 
 # Optional: The owner of the GitHub repository (user or organization).
-# github_owner = "my-github-org"
+#github_owner = "YOUR_GITHUB_ORG"
 
 # Optional: The name of the GitHub repository.
-# github_repo = "my-image-examples"
+#github_repo = "YOUR_GITHUB_REPO"
 
 # Optional: A regular expression to match GitHub branches that trigger Cloud Build on push.
-# git_branches_regexp_trigger = "^dev$"
+#git_branches_regexp_trigger = "^dev$"
 
 # Optional: The name of the Secure Source Manager instance.
-# secure_source_manager_instance_name = "my-ssm-instance"
+#secure_source_manager_instance_name = "YOUR_SSM_INSTANCE_NAME"
 
 # Optional: The name of the Secure Source Manager repository.
-# secure_source_manager_repo_name = "my-ssm-repo"
+#secure_source_manager_repo_name = "YOUR_SSM_REPO_NAME"
 
 # Optional: The URL of a Git repository to clone into the new Secure Source Manager repository. If null, cloning is skipped.
-# secure_source_manager_repo_git_url_to_clone = "https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples.git"
+#secure_source_manager_repo_git_url_to_clone = "https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples.git"
 
 # Optional: The Secure Source Manager (SSM) branch that triggers Cloud Build on push.
-# git_branch_trigger = "dev"
+#git_branch_trigger = "dev"
 
 # Cloud Workstations
 
 # Cloud Workstations Clusters
 cws_clusters = {
   "android" = {
-    network    = "default"
-    region     = "us-central1"
-    subnetwork = "default"
+    network    = "default"      # YOUR_NETWORK_NAME
+    region     = "us-central1"  # YOUR_REGION
+    subnetwork = "default"      # YOUR_SUBNETWORK_NAME
   }
 }
 
@@ -87,16 +87,16 @@ cws_configs = {
     #   "user1@example.com",
     #   "user2@example.com",
     ]
-    instances = [
-      {
-        name  = "user1-ws"
-        # users = ["user1@example.com"]
-      },
-      {
-        name  = "shared-ws"
-        # users = ["user1@example.com", "user2@example.com"]
-      }
-    ]
+    #instances = [
+    #  {
+    #    name  = "user1-ws"
+    #    # users = ["user1@example.com"]
+    #  },
+    #  {
+    #    name  = "shared-ws"
+    #    # users = ["user1@example.com", "user2@example.com"]
+    #  }
+    #]
   },
   "snapshot" = {
     cws_cluster = "android"
@@ -115,11 +115,10 @@ cws_configs = {
     custom_image_names             = [
       "android-studio",
       "android-studio-for-platform",
-      "code-oss",
-      "repo-builder"
+      "code-oss"
     ]
     creators = [
-    #   "admin@example.com",
+      # "admin@example.com",
     ]
     # instances = []
   }

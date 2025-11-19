@@ -28,7 +28,7 @@ locals {
 }
 
 resource "google_container_analysis_note" "vulnz_attestor" {
-  count   = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   project = data.google_project.project.project_id
   name    = "${local.prefix}${var.vulnz_attestor_name}"
@@ -37,39 +37,27 @@ resource "google_container_analysis_note" "vulnz_attestor" {
       human_readable_name = "Vulnerability Attestor"
     }
   }
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "google_container_analysis_note_iam_member" "vulnz_attestor_services" {
-  count   = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   project = google_container_analysis_note.vulnz_attestor[0].project
   note    = google_container_analysis_note.vulnz_attestor[0].name
   role    = "roles/containeranalysis.notes.occurrences.viewer"
   member  = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-binaryauthorization.iam.gserviceaccount.com"
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "google_kms_key_ring" "keyring" {
-  count    = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   project  = local.kms_project_id
   name     = "${local.prefix}${var.kms_keyring_name}"
   location = var.kms_keyring_location
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "google_kms_crypto_key" "vulnz_attestor_key" {
-  count    = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   name     = "${local.prefix}${var.kms_key_name}"
   key_ring = google_kms_key_ring.keyring[0].id
@@ -77,36 +65,32 @@ resource "google_kms_crypto_key" "vulnz_attestor_key" {
   version_template {
     algorithm = var.kms_signing_alg
   }
-  labels = local.common_labels
+  labels                     = local.common_labels
+  destroy_scheduled_duration = "${var.kms_key_destroy_scheduled_duration_days * 24 * 60 * 60}s"
 
   lifecycle {
     ignore_changes = [
-      labels,
+      labels
     ]
-    prevent_destroy = true
   }
 }
 
 resource "google_kms_crypto_key_iam_member" "vulnz_attestor" {
-  count         = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   crypto_key_id = google_kms_crypto_key.vulnz_attestor_key[0].id
   role          = "roles/cloudkms.signer"
   member        = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 data "google_kms_crypto_key_version" "vulnz_attestor" {
-  count      = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   crypto_key = google_kms_crypto_key.vulnz_attestor_key[0].id
 }
 
 resource "google_binary_authorization_attestor" "vulnz_attestor" {
-  count   = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   project = google_container_analysis_note.vulnz_attestor[0].project
   name    = "${local.prefix}${var.vulnz_attestor_name}"
@@ -120,14 +104,10 @@ resource "google_binary_authorization_attestor" "vulnz_attestor" {
       }
     }
   }
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "google_binary_authorization_policy" "policy" {
-  count                         = local.create_binary_authorization_resources ? 1 : 0
+  count = local.create_binary_authorization_resources ? 1 : 0
 
   project                       = google_container_analysis_note.vulnz_attestor[0].project
   global_policy_evaluation_mode = "ENABLE"
@@ -146,9 +126,5 @@ resource "google_binary_authorization_policy" "policy" {
       evaluation_mode  = var.stages[cluster_admission_rules.key].binary_authorization_evaluation_mode
       enforcement_mode = var.stages[cluster_admission_rules.key].binary_authorization_enforcement_mode
     }
-  }
-
-  lifecycle {
-    prevent_destroy = true
   }
 }

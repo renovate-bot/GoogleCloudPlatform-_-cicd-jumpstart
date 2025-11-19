@@ -101,6 +101,7 @@ Ensure the identity running Terraform has sufficient permissions on the target p
 | <a name="input_artifact_registry_name"></a> [artifact\_registry\_name](#input\_artifact\_registry\_name) | The name of the Artifact Registry repository to create if artifact\_registry\_id is null. | `string` | `"cicd-foundation"` | no |
 | <a name="input_artifact_registry_readers"></a> [artifact\_registry\_readers](#input\_artifact\_registry\_readers) | List of service account emails in IAM email format to grant Artifact Registry reader role. | `list(string)` | `[]` | no |
 | <a name="input_artifact_registry_region"></a> [artifact\_registry\_region](#input\_artifact\_registry\_region) | The region to use for Artifact Registry resources. | `string` | `"us-central1"` | no |
+| <a name="input_binary_authorization_always_create"></a> [binary\_authorization\_always\_create](#input\_binary\_authorization\_always\_create) | If true, create Binary Authorization resources even if kritis\_signer\_image is not provided. | `bool` | `false` | no |
 | <a name="input_build_machine_type_default"></a> [build\_machine\_type\_default](#input\_build\_machine\_type\_default) | The default machine type to use for Cloud Build jobs. | `string` | `"UNSPECIFIED"` | no |
 | <a name="input_build_timeout_default_seconds"></a> [build\_timeout\_default\_seconds](#input\_build\_timeout\_default\_seconds) | The default timeout in seconds for Cloud Build jobs. | `number` | `7200` | no |
 | <a name="input_canary_route_update_wait_time_seconds"></a> [canary\_route\_update\_wait\_time\_seconds](#input\_canary\_route\_update\_wait\_time\_seconds) | The time (in seconds) to wait for network route updates during GKE canary deployments. | `number` | `60` | no |
@@ -125,6 +126,7 @@ Ensure the identity running Terraform has sufficient permissions on the target p
 | <a name="input_github_owner"></a> [github\_owner](#input\_github\_owner) | The owner of the GitHub repository (user or organization). | `string` | `null` | no |
 | <a name="input_github_repo"></a> [github\_repo](#input\_github\_repo) | The name of the GitHub repository. | `string` | `null` | no |
 | <a name="input_kms_digest_alg"></a> [kms\_digest\_alg](#input\_kms\_digest\_alg) | The digest algorithm to use for KMS signing. | `string` | `"SHA512"` | no |
+| <a name="input_kms_key_destroy_scheduled_duration_days"></a> [kms\_key\_destroy\_scheduled\_duration\_days](#input\_kms\_key\_destroy\_scheduled\_duration\_days) | The number of days to schedule the KMS key for destruction. | `number` | `60` | no |
 | <a name="input_kms_key_name"></a> [kms\_key\_name](#input\_kms\_key\_name) | The name of the KMS key used for signing attestations. | `string` | `"vulnz-attestor-key"` | no |
 | <a name="input_kms_keyring_location"></a> [kms\_keyring\_location](#input\_kms\_keyring\_location) | The location for the KMS keyring. | `string` | `"us-central1"` | no |
 | <a name="input_kms_keyring_name"></a> [kms\_keyring\_name](#input\_kms\_keyring\_name) | The name of the KMS key ring. | `string` | `"vulnz-attestor-keyring"` | no |

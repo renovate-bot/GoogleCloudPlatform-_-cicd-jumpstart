@@ -379,6 +379,12 @@ variable "kms_digest_alg" {
   default     = "SHA512"
 }
 
+variable "kms_key_destroy_scheduled_duration_days" {
+  type        = number
+  description = "The number of days to schedule the KMS key for destruction."
+  default     = 60
+}
+
 variable "kms_key_name" {
   type        = string
   description = "The name of the KMS key used for signing attestations."
