@@ -17,37 +17,41 @@
 # Required: The Google Cloud Project ID to deploy the resources into.
 project_id = "YOUR_PROJECT_ID"
 
+# Networking
+
+# Optional: The name of the Virtual Private Cloud (VPC) network for the workstation. Defaults to "workstations".
+#vpc_name = "workstations"
+
 # Optional: The default region for compute resources. Defaults to "us-central1".
 #vpc_region = "europe-west1"
 
-# Optional: The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations.
-#secure_source_manager_region = "europe-west4"
+# Optional: The name of the Virtual Private Cloud (VPC) sub-network for the workstation in a region. Defaults to "primary".
+#subnet_name = "primary"
 
-## Artifact Registry
-# Optional: The ID of the Artifact Registry repository for container images.
-#artifact_registry_repository_id = "YOUR_REPOSITORY_ID"
+# Optional: The region for the Secure Source Manager instance, cf. https://cloud.google.com/secure-source-manager/docs/locations. Defaults to "us-central1".
+#secure_source_manager_region = "europe-west4"
 
 ## Source Control (GitHub & Secure Source Manager)
 
-# Optional: The owner of the GitHub repository (user or organization).
+# Optional: The owner of the GitHub repository (user or organization). Defaults to null.
 #github_owner = "YOUR_GITHUB_ORG"
 
-# Optional: The name of the GitHub repository.
+# Optional: The name of the GitHub repository. Defaults to null.
 #github_repo = "YOUR_GITHUB_REPO"
 
-# Optional: A regular expression to match GitHub branches that trigger Cloud Build on push.
+# Optional: A regular expression to match GitHub branches that trigger Cloud Build on push. Defaults to "^main$".
 #git_branches_regexp_trigger = "^dev$"
 
-# Optional: The name of the Secure Source Manager instance.
+# Optional: The name of the Secure Source Manager instance. Defaults to "cicd-foundation".
 #secure_source_manager_instance_name = "YOUR_SSM_INSTANCE_NAME"
 
-# Optional: The name of the Secure Source Manager repository.
+# Optional: The name of the Secure Source Manager repository. Defaults to "cicd-foundation".
 #secure_source_manager_repo_name = "YOUR_SSM_REPO_NAME"
 
-# Optional: The URL of a Git repository to clone into the new Secure Source Manager repository. If null, cloning is skipped.
+# Optional: The URL of a Git repository to clone into the new Secure Source Manager repository. If null, cloning is skipped. Defaults to "https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples.git".
 #secure_source_manager_repo_git_url_to_clone = "https://github.com/GoogleCloudPlatform/cloud-workstations-custom-image-examples.git"
 
-# Optional: The Secure Source Manager (SSM) branch that triggers Cloud Build on push.
+# Optional: The Secure Source Manager (SSM) branch that triggers Cloud Build on push. Defaults to "main".
 #git_branch_trigger = "dev"
 
 # Cloud Workstations
@@ -55,9 +59,9 @@ project_id = "YOUR_PROJECT_ID"
 # Cloud Workstations Clusters
 cws_clusters = {
   "android" = {
-    network    = "default"      # YOUR_NETWORK_NAME
-    region     = "us-central1"  # YOUR_REGION
-    subnetwork = "default"      # YOUR_SUBNETWORK_NAME
+    network    = "workstations"  # cf. vpc_name
+    region     = "us-central1"   # cf. vpc_region
+    subnetwork = "primary"       # cf. subnet_name
   }
 }
 
@@ -65,23 +69,22 @@ cws_clusters = {
 cws_configs = {
   "default" = {
     cws_cluster = "android"
-    # idle_timeout_seconds           = 7200
-    # machine_type                   = "e2-standard-4"
-    # boot_disk_size_gb              = 50
-    # disable_public_ip_addresses    = false
-    # pool_size                      = 1
-    # enable_nested_virtualization   = false
+    # idle_timeout_seconds           = 1800 # Defaults to 3600
+    # machine_type                   = "e2-standard-4" # Defaults to "n1-standard-96"
+    # boot_disk_size_gb              = 50 # Defaults to 200
+    # disable_public_ip_addresses    = false # Defaults to false
+    # pool_size                      = 1 # Defaults to 0
+    # enable_nested_virtualization   = false # Defaults to true
     persistent_disk_size_gb        = 200
     persistent_disk_fs_type        = "ext4"
-    persistent_disk_type           = "pd-standard"
+    persistent_disk_type           = "pd-ssd"
     persistent_disk_reclaim_policy = "DELETE"
-    # persistent_disk_source_snapshot = null
-    # image                          = "us-central1-docker.pkg.dev/cloud-workstations-images/predefined/code-oss:latest"
+    # persistent_disk_source_snapshot = null # Defaults to null
+    # image                          = "us-central1-docker.pkg.dev/cloud-workstations-images/predefined/code-oss:latest" # Defaults to null
     custom_image_names             = [
       "android-studio",
       "android-studio-for-platform",
       "code-oss",
-      "repo-builder"
     ]
     creators = [
     #   "user1@example.com",
@@ -98,62 +101,27 @@ cws_configs = {
     #  }
     #]
   },
-  "snapshot" = {
-    cws_cluster = "android"
-    # idle_timeout_seconds           = 7200
-    # machine_type                   = "n1-standard-4"
-    # boot_disk_size_gb              = 100
-    # disable_public_ip_addresses    = false
-    # pool_size                      = 0
-    # enable_nested_virtualization   = true
-    # persistent_disk_size_gb        = null
-    # persistent_disk_fs_type        = null
-    persistent_disk_type           = "pd-ssd"
-    persistent_disk_reclaim_policy = "RETAIN"
-    persistent_disk_source_snapshot = "projects/my-project/global/snapshots/my-snapshot"
-    # image                          = null
-    custom_image_names             = [
-      "android-studio",
-      "android-studio-for-platform",
-      "code-oss"
-    ]
-    creators = [
-      # "admin@example.com",
-    ]
-    # instances = []
-  }
 }
 
 # Custom images for Cloud Workstations
 cws_custom_images = {
   "android-studio" : {
     build = {
-      skaffold_path = "examples/images/android/android-studio"
+      skaffold_path   = "examples/images/android/android-studio"
       timeout_seconds = 7200
       machine_type    = "E2_HIGHCPU_32"
     }
-    # workstation_config = {
-    #   scheduler_region = "us-central1"
-    #   ci_schedule      = "0 1 * * *" # Daily at 1 AM
-    # }
   },
   "android-studio-for-platform" : {
     build = {
-      skaffold_path = "examples/images/android-open-source-project/android-studio-for-platform"
+      skaffold_path   = "examples/images/android-open-source-project/android-studio-for-platform"
       timeout_seconds = 7200
       machine_type    = "E2_HIGHCPU_32"
     }
   },
   "code-oss" : {
     build = {
-      skaffold_path = "examples/images/android-open-source-project/code-oss"
-      timeout_seconds = 7200
-      machine_type    = "E2_HIGHCPU_32"
-    }
-  },
-  "repo-builder" : {
-    build = {
-      skaffold_path = "examples/images/android-open-source-project/repo-builder"
+      skaffold_path   = "examples/images/android-open-source-project/code-oss"
       timeout_seconds = 7200
       machine_type    = "E2_HIGHCPU_32"
     }

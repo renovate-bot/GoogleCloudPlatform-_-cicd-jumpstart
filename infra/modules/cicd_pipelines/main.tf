@@ -15,6 +15,7 @@
 locals {
   # go/keep-sorted start
   activate_apis = concat([
+    "cloudresourcemanager.googleapis.com",
     "secretmanager.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudkms.googleapis.com",
@@ -69,30 +70,14 @@ data "google_project" "project" {
   ]
 }
 
-module "project_services_cloud_resourcemanager" {
-  source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.1.0"
-
-  project_id                  = var.project_id
-  enable_apis                 = var.enable_apis
-  disable_services_on_destroy = false
-  activate_apis = [
-    "cloudresourcemanager.googleapis.com"
-  ]
-}
-
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.1.0"
+  version = "18.2.0"
 
   project_id                  = var.project_id
   enable_apis                 = var.enable_apis
   disable_services_on_destroy = false
   activate_apis               = local.activate_apis
-
-  depends_on = [
-    module.project_services_cloud_resourcemanager
-  ]
 }
 
 resource "google_apikeys_key" "cloud_build" {
@@ -106,4 +91,8 @@ resource "google_apikeys_key" "cloud_build" {
       service = "cloudbuild.googleapis.com"
     }
   }
+
+  depends_on = [
+    module.project_services
+  ]
 }

@@ -31,6 +31,8 @@ module "vpc" {
       "default" = var.psa_cidr
     }
   }]
+
+  depends_on = [data.google_project.project]
 }
 
 module "fw" {
@@ -42,4 +44,6 @@ module "fw" {
     rules_folder  = "firewall/rules"
     cidr_tpl_file = "firewall/cidrs.yaml"
   }
+
+  depends_on = [data.google_project.project]
 }

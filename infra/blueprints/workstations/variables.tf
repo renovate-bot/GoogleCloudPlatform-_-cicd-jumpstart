@@ -174,9 +174,9 @@ variable "cws_clusters" {
 variable "cws_configs" {
   type = map(object({
     cws_cluster                     = string
-    idle_timeout_seconds            = optional(number, 7200)
+    idle_timeout_seconds            = optional(number, 3600)
     machine_type                    = optional(string, "n1-standard-96")
-    boot_disk_size_gb               = optional(number, 2000)
+    boot_disk_size_gb               = optional(number, 200)
     disable_public_ip_addresses     = optional(bool, false)
     pool_size                       = optional(number, 0)
     enable_nested_virtualization    = optional(bool, true)

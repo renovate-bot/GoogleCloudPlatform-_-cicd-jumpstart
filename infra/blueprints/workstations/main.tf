@@ -62,33 +62,18 @@ data "google_project" "project" {
   ]
 }
 
-module "project_services_cloud_resource_manager" {
-  source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.1.0"
-
-  project_id                  = var.project_id
-  enable_apis                 = var.enable_apis
-  disable_services_on_destroy = false
-  activate_apis = [
-    "cloudresourcemanager.googleapis.com"
-  ]
-}
-
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.1.0"
+  version = "18.2.0"
 
   project_id                  = var.project_id
   enable_apis                 = var.enable_apis
   disable_services_on_destroy = false
   activate_apis = [
+    "cloudresourcemanager.googleapis.com",
     "compute.googleapis.com",
     "monitoring.googleapis.com",
     "servicenetworking.googleapis.com",
     "serviceusage.googleapis.com",
-  ]
-
-  depends_on = [
-    module.project_services_cloud_resource_manager
   ]
 }
