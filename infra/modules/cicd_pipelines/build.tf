@@ -91,7 +91,7 @@ locals {
               "-c",
               <<-EOT
                 git clone "$${_GIT_CLONE_URL}" /workspace
-                if [ "$${_IS_GIT_REPO_MANUAL}" == "true" ]; then
+                if [ "$${_IS_GIT_REPO_MANUAL}" = "true" ]; then
                   cd /workspace
                   git checkout "$${_GIT_REPO_REF}"
                 elif [ -n "$${COMMIT_SHA}" ]; then
