@@ -58,6 +58,8 @@ resource "google_secure_source_manager_instance_iam_member" "instance_accessor" 
   instance_id = local.ssm_instance_name
   role        = "roles/securesourcemanager.instanceAccessor"
   member      = each.value
+
+  depends_on = [google_secure_source_manager_instance.cicd_foundation]
 }
 
 # Secure Source Manager (SSM) Repository
@@ -70,6 +72,8 @@ resource "google_secure_source_manager_repository" "cicd_foundation" {
   instance        = local.ssm_instance_id
   repository_id   = "${local.prefix}${var.secure_source_manager_repo_name}"
   deletion_policy = var.secure_source_manager_deletion_policy
+
+  depends_on = [google_secure_source_manager_instance.cicd_foundation]
 }
 
 resource "google_secure_source_manager_repository_iam_binding" "repo_reader" {
