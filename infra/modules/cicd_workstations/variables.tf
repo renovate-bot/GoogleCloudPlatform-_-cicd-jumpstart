@@ -54,6 +54,10 @@ variable "cws_clusters" {
 variable "cws_configs" {
   type = map(object({
     # go/keep-sorted start
+    accelerators = optional(list(object({
+      type  = string
+      count = number
+    })), [])
     boot_disk_size_gb            = number
     creators                     = optional(list(string))
     cws_cluster                  = string

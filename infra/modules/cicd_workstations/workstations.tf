@@ -83,6 +83,14 @@ resource "google_workstations_workstation_config" "config" {
       disable_public_ip_addresses  = each.value.disable_public_ip_addresses
       pool_size                    = each.value.pool_size
       enable_nested_virtualization = each.value.enable_nested_virtualization
+      dynamic "accelerators" {
+        for_each = coalesce(each.value.accelerators, [])
+
+        content {
+          type  = accelerators.value.type
+          count = accelerators.value.count
+        }
+      }
     }
   }
   persistent_directories {

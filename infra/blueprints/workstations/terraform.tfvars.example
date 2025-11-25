@@ -68,38 +68,44 @@ cws_clusters = {
 # Cloud Workstations Configs
 cws_configs = {
   "default" = {
-    cws_cluster = "android"
-    # idle_timeout_seconds           = 1800 # Defaults to 3600
-    # machine_type                   = "e2-standard-4" # Defaults to "n1-standard-96"
-    # boot_disk_size_gb              = 50 # Defaults to 200
-    # disable_public_ip_addresses    = false # Defaults to false
-    # pool_size                      = 1 # Defaults to 0
-    # enable_nested_virtualization   = false # Defaults to true
-    persistent_disk_size_gb        = 200
-    persistent_disk_fs_type        = "ext4"
-    persistent_disk_type           = "pd-ssd"
-    persistent_disk_reclaim_policy = "DELETE"
-    # persistent_disk_source_snapshot = null # Defaults to null
-    # image                          = "us-central1-docker.pkg.dev/cloud-workstations-images/predefined/code-oss:latest" # Defaults to null
-    custom_image_names             = [
+    #accelerators = [
+    #  {
+    #    type  = "nvidia-tesla-t4"
+    #    count = 1
+    #  }
+    #]
+    #boot_disk_size_gb = 50  # Defaults to 200
+    creators = [
+    #  "user1@example.com",
+    #  "user2@example.com",
+    ]
+    custom_image_names = [
       "android-studio",
       "android-studio-for-platform",
       "code-oss",
     ]
-    creators = [
-    #   "user1@example.com",
-    #   "user2@example.com",
-    ]
+    cws_cluster = "android"
+    #disable_public_ip_addresses = false  # Defaults to false
+    #enable_nested_virtualization = false  # Defaults to true
+    #idle_timeout_seconds = 1800  # Defaults to 3600
+    #image = "us-central1-docker.pkg.dev/cloud-workstations-images/predefined/code-oss:latest"  # Defaults to null
     #instances = [
     #  {
     #    name  = "user1-ws"
-    #    # users = ["user1@example.com"]
+    #    #users = ["user1@example.com"]
     #  },
     #  {
     #    name  = "shared-ws"
-    #    # users = ["user1@example.com", "user2@example.com"]
+    #    #users = ["user1@example.com", "user2@example.com"]
     #  }
     #]
+    #machine_type = "e2-standard-4"  # Defaults to "n1-standard-96"
+    persistent_disk_fs_type = "ext4"
+    persistent_disk_reclaim_policy = "DELETE"
+    persistent_disk_size_gb = 200
+    #persistent_disk_source_snapshot = null  # Defaults to null
+    persistent_disk_type = "pd-ssd"
+    #pool_size = 1  # Defaults to 0
   },
 }
 
@@ -131,12 +137,12 @@ cws_custom_images = {
 ## Android Platform Development
 
 android_branches = [
-  # "main",
-  # "feature2",
-  # "user3",
+  #"main",
+  #"feature2",
+  #"user3",
 ]
 
 android_targets = {
-  # "x86-userdebug" : "aosp_cf_x86_64_phone-trunk_staging-userdebug",
-  # "arm64-eng" : "aosp_cf_x86_64_phone-trunk_staging-eng",
+  #"x86-userdebug" : "aosp_cf_x86_64_phone-trunk_staging-userdebug",
+  #"arm64-eng" : "aosp_cf_x86_64_phone-trunk_staging-eng",
 }

@@ -173,27 +173,33 @@ variable "cws_clusters" {
 
 variable "cws_configs" {
   type = map(object({
-    cws_cluster                     = string
-    idle_timeout_seconds            = optional(number, 3600)
-    machine_type                    = optional(string, "n1-standard-96")
+    # go/keep-sorted start
+    accelerators = optional(list(object({
+      type  = string
+      count = number
+    })), [])
     boot_disk_size_gb               = optional(number, 200)
-    disable_public_ip_addresses     = optional(bool, false)
-    pool_size                       = optional(number, 0)
-    enable_nested_virtualization    = optional(bool, true)
-    persistent_disk_size_gb         = optional(number)
-    persistent_disk_fs_type         = optional(string)
-    persistent_disk_type            = string
-    persistent_disk_reclaim_policy  = string
-    persistent_disk_source_snapshot = optional(string)
-    image                           = optional(string)
-    custom_image_names              = optional(list(string), [])
     creators                        = optional(list(string))
+    custom_image_names              = optional(list(string), [])
+    cws_cluster                     = string
+    disable_public_ip_addresses     = optional(bool, false)
     display_name                    = optional(string)
+    enable_nested_virtualization    = optional(bool, true)
+    idle_timeout_seconds            = optional(number, 3600)
+    image                           = optional(string)
     instances = optional(list(object({
       name         = string
       display_name = optional(string)
       users        = list(string)
     })))
+    machine_type                    = optional(string, "n1-standard-96")
+    persistent_disk_fs_type         = optional(string)
+    persistent_disk_reclaim_policy  = string
+    persistent_disk_size_gb         = optional(number)
+    persistent_disk_source_snapshot = optional(string)
+    persistent_disk_type            = string
+    pool_size                       = optional(number, 0)
+    # go/keep-sorted end
   }))
   description = "A map of Cloud Workstation configurations."
   default     = {}
