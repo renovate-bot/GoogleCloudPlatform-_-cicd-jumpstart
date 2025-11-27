@@ -178,15 +178,15 @@ variable "cws_configs" {
       type  = string
       count = number
     })), [])
-    boot_disk_size_gb               = optional(number, 200)
-    creators                        = optional(list(string))
-    custom_image_names              = optional(list(string), [])
-    cws_cluster                     = string
-    disable_public_ip_addresses     = optional(bool, false)
-    display_name                    = optional(string)
-    enable_nested_virtualization    = optional(bool, true)
-    idle_timeout_seconds            = optional(number, 3600)
-    image                           = optional(string)
+    boot_disk_size_gb            = optional(number, 200)
+    creators                     = optional(list(string))
+    custom_image_names           = optional(list(string), [])
+    cws_cluster                  = string
+    disable_public_ip_addresses  = optional(bool, false)
+    display_name                 = optional(string)
+    enable_nested_virtualization = optional(bool, true)
+    idle_timeout_seconds         = optional(number, 3600)
+    image                        = optional(string)
     instances = optional(list(object({
       name         = string
       display_name = optional(string)
@@ -199,6 +199,11 @@ variable "cws_configs" {
     persistent_disk_source_snapshot = optional(string)
     persistent_disk_type            = string
     pool_size                       = optional(number, 0)
+    shielded_instance_config = optional(object({
+      enable_secure_boot          = optional(bool, true)
+      enable_vtpm                 = optional(bool, true)
+      enable_integrity_monitoring = optional(bool, true)
+    }), null)
     # go/keep-sorted end
   }))
   description = "A map of Cloud Workstation configurations."

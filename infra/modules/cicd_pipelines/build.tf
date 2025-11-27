@@ -258,7 +258,7 @@ locals {
   }
 
   # The content of the Kritis policy file, or the default policy if not specified. Empty if Binary Authorization is not used.
-  kritis_policy  = var.kritis_policy_file == null ? var.kritis_policy_default : file(var.kritis_policy_file)
+  kritis_policy = var.kritis_policy_file == null ? var.kritis_policy_default : file(var.kritis_policy_file)
 
   policy_content = local.use_binary_authorization ? local.kritis_policy : ""
 

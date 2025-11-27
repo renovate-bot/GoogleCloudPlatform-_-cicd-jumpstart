@@ -13,7 +13,7 @@
 # limitations under the License.
 
 module "vpc" {
-  count      = var.create_vpc ? 1 : 0
+  count = var.create_vpc ? 1 : 0
 
   source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc?ref=v49.0.0"
 

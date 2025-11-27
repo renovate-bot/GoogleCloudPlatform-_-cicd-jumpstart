@@ -91,6 +91,15 @@ resource "google_workstations_workstation_config" "config" {
           count = accelerators.value.count
         }
       }
+      dynamic "shielded_instance_config" {
+        for_each = each.value.shielded_instance_config == null ? [] : [each.value.shielded_instance_config]
+
+        content {
+          enable_secure_boot          = shielded_instance_config.value.enable_secure_boot
+          enable_vtpm                 = shielded_instance_config.value.enable_vtpm
+          enable_integrity_monitoring = shielded_instance_config.value.enable_integrity_monitoring
+        }
+      }
     }
   }
   persistent_directories {

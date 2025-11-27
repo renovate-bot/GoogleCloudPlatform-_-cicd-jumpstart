@@ -14,7 +14,7 @@
 
 locals {
   # go/keep-sorted start
-  cloudbuild_service_agent = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+  cloudbuild_service_agent        = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
   cloudbuild_webhook_uri_template = "https://cloudbuild.googleapis.com/v1/projects/%s/locations/%s/triggers/%s:webhook"
   ssm_instance_accessor_members = toset(concat(
     [module.service_account_cloud_build.iam_email],
@@ -26,9 +26,9 @@ locals {
     google_secure_source_manager_instance.cicd_foundation[0].id
   ) : null
   ssm_instance_is_provided = var.secure_source_manager_instance_id != null
-  ssm_instance_name = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[5] : var.secure_source_manager_instance_name
-  ssm_location      = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[3] : var.secure_source_manager_region
-  ssm_project       = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[1] : data.google_project.project.project_id
+  ssm_instance_name        = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[5] : var.secure_source_manager_instance_name
+  ssm_location             = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[3] : var.secure_source_manager_region
+  ssm_project              = local.ssm_instance_is_provided ? split("/", var.secure_source_manager_instance_id)[1] : data.google_project.project.project_id
   # go/keep-sorted end
 }
 
@@ -135,11 +135,11 @@ resource "google_secret_manager_secret_iam_policy" "policy" {
 resource "google_secure_source_manager_hook" "cicd_foundation" {
   for_each = { for k, v in google_cloudbuild_trigger.ci_pipeline : k => v if local.source.ssm && local.ci_apps_flags[k].is_webhook_trigger }
 
-  project                = google_secure_source_manager_repository.cicd_foundation[0].project
-  hook_id                = each.value.name
-  repository_id          = google_secure_source_manager_repository.cicd_foundation[0].repository_id
-  location               = google_secure_source_manager_repository.cicd_foundation[0].location
-  target_uri             = format(
+  project       = google_secure_source_manager_repository.cicd_foundation[0].project
+  hook_id       = each.value.name
+  repository_id = google_secure_source_manager_repository.cicd_foundation[0].repository_id
+  location      = google_secure_source_manager_repository.cicd_foundation[0].location
+  target_uri = format(
     local.cloudbuild_webhook_uri_template,
     each.value.project,
     each.value.location,
